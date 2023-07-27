@@ -2,12 +2,10 @@
 {
 <#
     .SYNOPSIS
-    Connect to Microsoft Graph (requires PS-module Microsoft Graph minimum v2.x)
+    Invoke command to get/put/post/patch/delete data using Microsoft Graph REST endpoint
 
     .DESCRIPTION
-    Connect to Microsoft Graph using Azure App & Secret
-    Connect to Microsoft Graph using Azure App & Certificate Thumprint
-    Connect to Microsoft Graph using interactive login and scope
+    Get data using Microsoft Graph REST endpoint in case there is no PS-cmdlet available
 
     .AUTHOR
     Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
@@ -31,11 +29,11 @@
     Returns the data
 
     .EXAMPLE
-    # Method #1 - REST Uri call
+    # Method #1 - REST Endpoint
     $Uri        = "https://graph.microsoft.com/v1.0/devicemanagement/managedDevices"
     $Devices    = Invoke-MgGraphRequestPS -Uri $Uri -Method GET -OutputType PSObject
 
-    # Method #2 - MgGraph cmdlet
+    # Method #2 - MgGraph cmdlet (prefered method, if available)
     $Devices = Get-MgDeviceManagementManagedDevice
     $Devices
 
@@ -87,8 +85,8 @@
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUt+cIQ0HMOHDRqxcmmYI/kZyY
-# XCiggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUvG+yqF1c+gtEfmj6NdX6wH0D
+# Yw6ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -167,16 +165,16 @@
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# D82MgJnnNCHFRO/2p3Y61b6Qo/gwDQYJKoZIhvcNAQEBBQAEggIAYGcjLt4LGhlz
-# Q0E+Cqz+klKfaSyYi5k8JpC0vyVcUigKOu5Iz4gFDoUDeQ7fyx/y77hPmFzkdHk8
-# qZLBmuLwVSIx28ykSPq7V1ENae448Q9k0fskpzdRyTVF2SnUUbIsZtaR1oyOP8du
-# Ti25ONTPPdFbfZ8W6eLvAH3CFxa9+/HfMvt1kVs3xWUrrU2Lm1Z9QdhM6L0xEO8K
-# VX5IyP8hgAaANrPedQ2IvD0x0r0fArDYG5IaG9/dCgHJRPH6T6OZg8vjfo2MpY/P
-# eTjM852L1/1lfv6p2uxGDBZCuc92iyAwPPBOhG3sZbdBB8Ly3QogSBkExabDFTtQ
-# A8UVAro/qcnNiOm26wHqvpZVhn70W295/pqhjOS4IRHegZlNqV61dnxkt80I4yYC
-# tbmgo7RroqoVguLd9JU5RUz6qVee4wLp/oUw3CWdoYXGUGXxrrvBEQknvVitdU3p
-# EVTleqH5qZPkvx7uaH1mNkqlwKO5GQNbCiaeKci3NprJVcTrCmtNflGLcc7R9Uql
-# dTqXVgXOhhza163HFyDmYmCu2O24h64o1EKmoA3C5RfMsIXp7nY0/EXU/S3GkYOj
-# WI4zaWjRXlJhKv1r+ZWXj/7MQvakSpCkh/Dxxhv488b1i9gwc9MEgeqGT/HzIJxp
-# w4t7ICt+qtlbUfbBtFpdkVT7MKYDp9U=
+# j7khWmiAixD1Te74dYwwIHwtDwAwDQYJKoZIhvcNAQEBBQAEggIAKaxfY2fQj+Ci
+# tnIP221cx45nK4qC29E7ZgdRoDMomLN4Ln4yscJ3WTGmwYHxAtygZJMe0ohWig7M
+# KUVaETMp4Pe+OaZYLK82DlZ4w18T6YU4pmYf0J0qwYx4YLK4UZ4FGOkLg4HDLWVY
+# rXDaIv5vsd6fi7W44FQYQRU4xwH+UOUprQTK0gt6nHrB3yd5whQ/eKPbHpEW9bI/
+# Uvt04AIkpoqBVYZ5cRPC4nGYXVwMYTZziRRHyWWY4AltY6A27dd3hyD3BbmGR8uo
+# Ew2wJbTCYTxOrv6Z5T7eEEiOs2gsXsasOUiWvV35Z6GUx4UTRN9BtiuexTVORJZN
+# jkdDFQbCsIGdzIhjlTW1CbrgKaW24lY4w0TbEVkwseNMx4vLMA4+3COyRIoZmvnZ
+# AYBzv+aI9PP72cW/63PU+V+LVT6In6rd4DvnOdY5CPDRwDrIYFpFi+dehPewHjjP
+# fLssI9HKzE0cdpUgoAqfp7PUwTRvbyu83y9ezzxPdQbl9lVxFJL/jN/T1ng9EvjM
+# Sn+n3D7/0RlF28RzPsUdvXm3x3djwjuSAqr+22nqhWhSZO6ArnVVPm1r7l/0eKzb
+# q4EiLK9fAUBIMwDn1N9IgvjeKvkB6Ciw4CYWkbatOSW0RgsqpcS0okqm7lUvttgY
+# TvErb5SIgo4kiToELKAeWB1KT4dskrA=
 # SIG # End signature block

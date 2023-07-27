@@ -3,6 +3,7 @@ Think of this PS-module as a helper for **Microsoft Graph connectivity** and **d
 
 | Function                       | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
+| CheckVersion-Microsoft.Graph   | Version management of Microsoft.Graph PS modules<br/>Installing latest version of Microsoft.Graph, if not found<br/>Shows older installed versions of Microsoft.Graph<br/>Checks if newer version if available from PSGallery of Microsoft.Graph<br/>Automatic clean-up old versions of Microsoft.Graph<br/>Update to latest version from PSGallery of Microsoft.Graph |
 | Connect-MicrosoftGraphPS       | Connect to Microsoft Graph using Azure App & Secret<br/>Connect to Microsoft Graph using Azure App & Certificate Thumprint<br/>Connect to Microsoft Graph using interactive login and scope |
 | Invoke-MgGraphRequestPS        | Invoke command with pagination support to get/put/post/patch/delete data using Microsoft Graph REST endpoint. |
 | InstallUpdate-MicrosoftGraphPS | Install latest version of MicrosoftGraphPS, if not found<br/>Update to latest version of MicrosoftGraphPS, if switch (-AutoUpdate) is set |
@@ -126,7 +127,64 @@ $AutoUpdate = $True
 
 
 
-# **Function** Synopsis
+# **Synopsis for functions**
+
+
+
+## CheckVersion-Microsoft.Graph
+
+```
+.SYNOPSIS
+Version management of Microsoft.Graph PS modules
+
+.DESCRIPTION
+Installing latest version of Microsoft.Graph, if not found
+Shows older installed versions of Microsoft.Graph
+Checks if newer version if available from PSGallery of Microsoft.Graph
+Automatic clean-up old versions of Microsoft.Graph
+Update to latest version from PSGallery of Microsoft.Graph
+
+.AUTHOR
+Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+.LINK
+https://github.com/KnudsenMorten/MicrosoftGraphPS
+
+.PARAMETER Scope
+Scope where MicrosoftGraphPS module will be installed - can be AllUsers or CurrentUser
+
+.PARAMETER CleanupOldMicrosoftGraphVersions
+[switch] Removes old versions, if any found
+
+.PARAMETER InstallLatestMicrosoftGraph
+[switch] Install latest version of Microsoft.Graph from PSGallery, if new version detected
+
+.PARAMETER ShowVersionDetails
+[switch] Show version details (detailed)
+
+.INPUTS
+None. You cannot pipe objects
+
+.OUTPUTS
+Returns the data
+
+.EXAMPLE
+
+# Show details of installed Microsoft.Graph
+CheckVersion-Microsoft.Graph
+
+# Show details of installed Microsoft.Graph including version details
+CheckVersion-Microsoft.Graph -ShowVersionDetails
+
+# Show details of installed Microsoft.Graph and install latest (if found)
+CheckVersion-Microsoft.Graph -InstallLatestMicrosoftGraph
+
+# Show details of installed Microsoft.Graph and clean-up old versions (if found)
+CheckVersion-Microsoft.Graph -CleanupOldMicrosoftGraphVersions
+
+# Show details, install latest (if found) and clean-up old versions (if found)
+CheckVersion-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions
+```
 
 
 
