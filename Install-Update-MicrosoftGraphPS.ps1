@@ -18,7 +18,7 @@
 #>
 
 # Variables
-    $Scope      = "AllUsers"  # Valid: AllUsers, CurrentUser
+    $Scope      = "AllUsers"  # Valid parameters: AllUsers, CurrentUser
     $AutoUpdate = $True
 
 # Check if MicrosoftGraphPS is installed
