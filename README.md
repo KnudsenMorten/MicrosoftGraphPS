@@ -4,8 +4,8 @@ Think of this PS-module as a helper for **Microsoft Graph connectivity** and **d
 | Function                       | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
 | Connect-MicrosoftGraphPS       | Connect to Microsoft Graph using Azure App & Secret<br/>Connect to Microsoft Graph using Azure App & Certificate Thumprint<br/>Connect to Microsoft Graph using interactive login and scope |
-| Invoke-MgGraphRequestPS        | Invoke command to get/put/post/patch/delete data using Microsoft Graph REST endpoint<br/>Function will automatically do pagination. |
-| InstallUpdate-MicrosoftGraphPS | Install latest version of MicrosoftGraphPS, if not found<br/>Updates to latest version of MicrosoftGraphPS, if switch (-AutoUpdate) is set |
+| Invoke-MgGraphRequestPS        | Invoke command with pagination support to get/put/post/patch/delete data using Microsoft Graph REST endpoint. |
+| InstallUpdate-MicrosoftGraphPS | Install latest version of MicrosoftGraphPS, if not found<br/>Update to latest version of MicrosoftGraphPS, if switch (-AutoUpdate) is set |
 
 More functions will be added in the future.
 
