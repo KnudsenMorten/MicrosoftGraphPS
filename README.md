@@ -20,13 +20,13 @@ Think of this PS-module as a helper for **Microsoft Graph version-management, co
 
 **Removing old Microsoft.Graph**
 
-![Removing](img\prereq-3.jpg)
+![Removing](img/prereq-3.jpg)
 
 
 
 **Everything OK**
 
-![Connect](img\prereq-2.jpg)
+![Connect](img/prereq-2.jpg)
 
 
 
