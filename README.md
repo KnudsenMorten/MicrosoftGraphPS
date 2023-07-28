@@ -10,21 +10,22 @@ Think of this PS-module as a helper for **Microsoft Graph version-management, co
 
 
 
-### Requirement (minimum)
+## Pre-req script for getting environment ready with Microsoft.Graph and MicrosoftGraphPS
 
-Microsoft Graph v2.x
+Just copy the entire script-code below into the beginning of your script - and change the variables according to your needs as outlined below.
 
+You can also [download the script here](https://raw.githubusercontent.com/KnudsenMorten/MicrosoftGraphPS/main/Install-Update-MicrosoftGraphPS-Microsoft.Graph.ps1). 
 
-
-## Pre-req Installation / Automatic Update of MicrosoftGraphPS module from PSGallery
-
-I have prepared a script for you shown below - or [you can download it here](https://raw.githubusercontent.com/KnudsenMorten/MicrosoftGraphPS/main/Install-Update-MicrosoftGraphPS.ps1). 
-
-Just copy the entire script-code into your script in the beginning of the script - and change the variables according to your needs.
+You can run the pre-req code as part of your script and it will be able to update to latest version and remove old versions, if desired.
 
 
 
 ##### Variables
+
+```
+$Scope      = "AllUsers"  # Valid parameters: AllUsers, CurrentUser
+$AutoUpdate = $True
+```
 
 $Scope controls where MicrosoftGraphPS PS-module is installed (AllUsers, CurrentUser)
 
@@ -32,10 +33,9 @@ You can auto-update to latest version of MicrosoftGraphPS, if you set $AutoUpdat
 
 If you want to control which version, you can disable AutoUpdate ($AutoUpdate = $False)
 
-```
-$Scope      = "AllUsers"  # Valid parameters: AllUsers, CurrentUser
-$AutoUpdate = $True
-```
+
+
+**Complete script**
 
     ##########################################################################################
     # Pre-req script for getting environment ready with Microsoft.Graph and MicrosoftGraphPS
@@ -47,23 +47,23 @@ $AutoUpdate = $True
     Version management of Microsoft.Graph PS modules
     
     .DESCRIPTION
+    
     MicrosoftGraphPS:
-        Install latest version of MicrosoftGraphPS, if not found
-        Updates to latest version of MicrosoftGraphPS, if switch ($AutoUpdate) is set to $True
+     Install latest version of MicrosoftGraphPS, if not found
+     Updates to latest version of MicrosoftGraphPS, if switch ($AutoUpdate) is set to $True
     
     Microsoft.Graph:
-        Installing latest version of Microsoft.Graph, if not found
-        Shows older installed versions of Microsoft.Graph
-        Checks if newer version if available from PSGallery of Microsoft.Graph
-        Automatic clean-up old versions of Microsoft.Graph
-        Update to latest version from PSGallery of Microsoft.Graph
+     Installing latest version of Microsoft.Graph, if not found
+     Shows older installed versions of Microsoft.Graph
+     Checks if newer version if available from PSGallery of Microsoft.Graph
+     Automatic clean-up old versions of Microsoft.Graph
+     Update to latest version from PSGallery of Microsoft.Graph
     
     .AUTHOR
     Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
     
     .LINK
     https://github.com/KnudsenMorten/MicrosoftGraphPS
-    
     #>
     
     # Variables
@@ -78,16 +78,18 @@ $AutoUpdate = $True
             # check for NuGet package provider
             [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     
-            Write-Output ""
-            Write-Output "Checking Powershell PackageProvider NuGet ... Please Wait !"
+            Write-host ""
+            Write-host "Checking Powershell PackageProvider NuGet ... Please Wait !"
                 if (Get-PackageProvider -ListAvailable -Name NuGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue) 
                     {
+                        Write-host ""
                         Write-Host "OK - PackageProvider NuGet is installed"
                     } 
                 else 
                     {
                         try
                             {
+                                Write-host ""
                                 Write-Host "Installing NuGet package provider .. Please Wait !"
                                 Install-PackageProvider -Name NuGet -Scope $Scope -Confirm:$false -Force
                             }
@@ -97,11 +99,13 @@ $AutoUpdate = $True
                         }
                     }
     
-            Write-Output "Powershell module MicrosoftGraphPS was not found !"
-            Write-Output "Installing latest version from PsGallery in scope $Scope .... Please Wait !"
+            Write-host "Powershell module MicrosoftGraphPS was not found !"
+            Write-Host ""
+            Write-host "Installing latest version from PsGallery in scope $Scope .... Please Wait !"
+            Write-Host ""
     
             Install-module -Name MicrosoftGraphPS -Repository PSGallery -Force -Scope $Scope
-            import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+            import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking -WarningAction SilentlyContinue
         }
             
     Elseif ($ModuleCheck)    # MicrosoftGraphPS is installed - checking version, if it should be updated
@@ -110,36 +114,48 @@ $AutoUpdate = $True
             $ModuleCheck = Sort-Object -Descending -Property Version -InputObject $ModuleCheck
             $ModuleCheck = $ModuleCheck[0]
     
-            Write-Output "Checking latest version at PsGallery for MicrosoftGraphPS module"
+            Write-host "Checking latest version of MicrosoftGraphPS module at PsGallery"
             $online = Find-Module -Name MicrosoftGraphPS -Repository PSGallery
     
             #compare versions
             if ( ([version]$online.version) -gt ([version]$ModuleCheck.version) ) 
                 {
-                Write-Output "Newer version ($($online.version)) detected"
+                    write-host ""
+                    Write-host "   Newer version ($($online.version)) detected"
     
-                If ($AutoUpdate -eq $true)
-                    {
-                        Write-Output "Updating MicrosoftGraphPS module .... Please Wait !"
-                        Update-module -Name MicrosoftGraphPS -Force
-                        import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
-                    }
+                    If ($AutoUpdate -eq $true)
+                        {
+                            write-host ""
+                            Write-host "   Updating MicrosoftGraphPS module .... Please Wait !"
+                            Write-Host ""
+    
+                            Update-module -Name MicrosoftGraphPS -Force
+                            import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking -WarningAction SilentlyContinue
+                        }
                 }
             else
                 {
-                # No new version detected ... continuing !
-                Write-Output "OK - Running latest version"
+                    # No new version detected ... continuing !
+                    write-host ""
+                    Write-host "   OK - Running latest version of MicrosoftGraphPS"
+                    Write-Host ""
     
-                $UpdateAvailable = $False
-                import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+                    $UpdateAvailable = $False
+                    import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking -WarningAction SilentlyContinue
                 }
         }
     
     ##########################################################################################
     # Install-Update-Cleanup-Microsoft.Graph
     ##########################################################################################
-    CheckVersion-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions
-    
+    If ($AutoUpdate)
+        {
+            Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions -Scope $Scope
+        }
+    Else
+        {
+            Manage-Version-Microsoft.Graph -Scope $Scope
+        }
 
 
 

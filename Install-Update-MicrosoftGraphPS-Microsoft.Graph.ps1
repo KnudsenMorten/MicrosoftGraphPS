@@ -109,4 +109,11 @@ Elseif ($ModuleCheck)    # MicrosoftGraphPS is installed - checking version, if 
 ##########################################################################################
 # Install-Update-Cleanup-Microsoft.Graph
 ##########################################################################################
-Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions
+If ($AutoUpdate)
+    {
+        Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions -Scope $Scope
+    }
+Else
+    {
+        Manage-Version-Microsoft.Graph -Scope $Scope
+    }
