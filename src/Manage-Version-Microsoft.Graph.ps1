@@ -1,4 +1,4 @@
-﻿Function CheckVersion-Microsoft.Graph
+﻿Function Manage-Version-Microsoft.Graph
 {
 <#
     .SYNOPSIS
@@ -38,19 +38,19 @@
     .EXAMPLE
 
     # Show details of installed Microsoft.Graph
-    CheckVersion-Microsoft.Graph
+    Manage-Version-Microsoft.Graph
 
     # Show details of installed Microsoft.Graph including version details
-    CheckVersion-Microsoft.Graph -ShowVersionDetails
+    Manage-Version-Microsoft.Graph -ShowVersionDetails
 
     # Show details of installed Microsoft.Graph and install latest (if found)
-    CheckVersion-Microsoft.Graph -InstallLatestMicrosoftGraph
+    Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph
 
     # Show details of installed Microsoft.Graph and clean-up old versions (if found)
-    CheckVersion-Microsoft.Graph -CleanupOldMicrosoftGraphVersions
+    Manage-Version-Microsoft.Graph -CleanupOldMicrosoftGraphVersions
 
     # Show details, install latest (if found) and clean-up old versions (if found)
-    CheckVersion-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions
+    Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions
 
 #>
     [CmdletBinding()]
@@ -158,7 +158,24 @@
             ForEach ($ModuleRemove in $VersionsCleanup)
                 {
                     Write-Host "Removing old version $($ModuleRemove.Version) of Microsoft.Graph ... Please Wait !"
-                    Uninstall-module Microsoft.Graph -RequiredVersion $ModuleRemove.Version -Force
+                    Try
+                        {
+                            Uninstall-module Microsoft.Graph -RequiredVersion $ModuleRemove.Version -Force
+                        }
+                    Catch
+                        {
+                            $ModulePath = (get-item $ModuleRemove.Path).DirectoryName
+                            if (Test-Path $modulePath) 
+                                {
+                                    $Result = takeown /F $ModulePath /A /R
+                                    $Result = icacls $modulePath /reset
+                                    $Result = icacls $modulePath /grant Administrators:'F' /inheritance:d /T
+                                    $Result = Remove-Item -Path $ModulePath -Recurse -Force -Confirm:$false
+                                }
+
+                        }
+<#
+#>
                 }
         }
 }
@@ -166,8 +183,8 @@
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQULR7G06f18ewiaEay14BQszpU
-# +E2ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU8adIQGh24zA6Bb+OGS0rB025
+# Xauggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -246,16 +263,16 @@
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# jTE/0lRa56As8+VPqaxM8gdbHj0wDQYJKoZIhvcNAQEBBQAEggIAqEaxqymfsrdb
-# 98NEc1qBxN4ab9x1a7J4zl4gvwoWg3rvS3pxkk15OsOBsxqGjkA1bnn4FimQCyHK
-# EIK8yNrc+3P0p6fha60evpV/Bv6Lk6Y7QfTsDlqiblO9/HdC1eDBNspNsUM1u/NZ
-# Ztl/U2kceBY2tyufp+Z2ScBvTwdl5m7zSXMrLd69odlM83D6TXuFRF07iDxQHIp9
-# GWS+4UwXLDcip1UaCYcoN5ZE0WtDuDQEbsRJ8A75cpLechLWJ10PonO/mBzvnZNU
-# 58Ygp3ADEM0RVF6Zb1FNn8XtXbJ1ihwmd3hrkGpvf4FJNSlS2dahb4vnX+iNgY71
-# 0gCQ4OMIASQ0pmy6SUpKvQNXBoVBw13xIQdWxT8NDvg0e0zOikHB11fy4rdQ5rZc
-# io0x5JZbLwBQp8U988wxoLQ2gehqpjC9llCn8/ePLZXEOEXiFBIw1Yutrsnnyo+B
-# nZ1ZyuVmRRiuDZf1Bsp6kzgmF0QGmhYVR6v9lUnqITnaQGHdqmAYXSYSQAPPuN+y
-# oVBUYPAyG+nauUfGC/o2VdUo8mudtnvqF5TUeAbf9DB6nrIthUi4+fq+B0i5Z5+k
-# kX2CIqQsOddHKLRO8TnY3YOotinh9rmaSwPdWcrSKJuvy7h4hvJj9fYdi1Q3gpY9
-# OdIrejuiU41JF9iTZlPX1fw4hCE56Gk=
+# O3K/udDSWE/Yptmi+woFeYAnnUEwDQYJKoZIhvcNAQEBBQAEggIAVywl2ORy0uAC
+# e6YLHY+sYZhAyahWiZ0SgOoQ8yOioLQO3g85CWeyeW3N2tiH0RoaAzOcnsras1cP
+# 2FsqcJB8SFh2sYrzUlFNqMnofvEQvpTPVPwZhbB3lGf9Pvy+sYIdWl+w3nK3L0sm
+# c2/I9widGJUBZX9zbtVnGpQb/GmDco6mSpFiggy2XFJA8nxJ7gMhaf73yYxLSxRV
+# elhwgbvxRniFgpSSZ2b76K0qYCsqYwF4QkeSnaFSt7yoodQiFQDtsj+s8y1oVvvw
+# v/8vEAUO9um5nIG0Myev0EgqiLQMy8MjkJ6Uk3Fnls7NDUou9tO2U0XNVvprqj8m
+# i4mEf4pdx6OZJhfDYqEkgQEj943Vzz3JeC/TRUAr0tEpdWhjcu7IoY9EZHZ9/6DY
+# 4VlU0rJBsZo8tOJKWMCwl+QymIjDKHVXhgkZtiZ/rDICpXYj9Ac0qNNe51DqUUXb
+# +axI8cDSdOV1YIfuU18/WHDXI1hlyPSIAA/kwBvfNJAlTwH+akISobmE+6YvNOTc
+# 6p9k0sKNpLRCXgymaNGEy3+ULgTB7ebLnHbiRQeocT69RpKbRZSxdsFHDycLFK/W
+# 3SVYKCThK/L3aCVxKucgiv7n+P6uMChu7zI+sY6jAKQGU2UXTZhBLZdTBlK14w2h
+# Qe9zs+IYKZkLlptI/ADsz2mEv3vgFFY=
 # SIG # End signature block
