@@ -1,5 +1,5 @@
 # MicrosoftGraphPS
-I'm really happy to announce my newest PS-module, MicrosoftGraphPS.
+I'm really happy to announce my newest PS-module, **MicrosoftGraphPS**.
 
 Think of this PS-module as a helper for **Microsoft Graph version-management, connectivity** and **data management** using **Microsoft Graph**. More functions will be added when needed.
 
@@ -9,6 +9,26 @@ Think of this PS-module as a helper for **Microsoft Graph version-management, co
 | Connect-MicrosoftGraphPS       | Connect to Microsoft Graph using Azure App & Secret<br/>Connect to Microsoft Graph using Azure App & Certificate Thumprint<br/>Connect to Microsoft Graph using interactive login and scope |
 | Invoke-MgGraphRequestPS        | Invoke command with pagination support to get/put/post/patch/delete data using Microsoft Graph REST endpoint. |
 | InstallUpdate-MicrosoftGraphPS | Install latest version of MicrosoftGraphPS, if not found<br/>Update to latest version of MicrosoftGraphPS, if switch (-AutoUpdate) is set |
+
+
+
+**Updating both Microsoft.Graph and MicrosoftGraphPS**
+
+![Connect](img/Prereq-0.jpg)
+
+
+
+**Removing old Microsoft.Graph**
+
+![Removing](img\prereq-3.jpg)
+
+
+
+**Everything OK**
+
+![Connect](img\prereq-2.jpg)
+
+
 
 
 
@@ -52,7 +72,7 @@ Welcome To Microsoft Graph!
 
 
 
-![]()
+
 
 #### Connectivity using interactive login and scopes
 
@@ -106,7 +126,6 @@ PSHostVersion          : 5.1.17763.4644
 ManagedIdentityId      : 
 ClientSecret           : System.Security.SecureString
 Environment            : Global
-
 ```
 
 
