@@ -327,57 +327,56 @@ Function Invoke-MgGraphRequestPS
 Function Manage-Version-Microsoft.Graph
 {
 <#
-    .SYNOPSIS
-    Version management of Microsoft.Graph PS modules
+.SYNOPSIS
+Version management of Microsoft.Graph PS modules
 
-    .DESCRIPTION
-    Installing latest version of Microsoft.Graph, if not found
-    Shows older installed versions of Microsoft.Graph
-    Checks if newer version if available from PSGallery of Microsoft.Graph
-    Automatic clean-up old versions of Microsoft.Graph
-    Update to latest version from PSGallery of Microsoft.Graph
+.DESCRIPTION
+Installing latest version of Microsoft.Graph, if not found
+Shows older installed versions of Microsoft.Graph
+Checks if newer version if available from PSGallery of Microsoft.Graph
+Automatic clean-up old versions of Microsoft.Graph
+Update to latest version from PSGallery of Microsoft.Graph
 
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+.AUTHOR
+Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
 
-    .LINK
-    https://github.com/KnudsenMorten/MicrosoftGraphPS
+.LINK
+https://github.com/KnudsenMorten/MicrosoftGraphPS
 
-    .PARAMETER Scope
-    Scope where MicrosoftGraphPS module will be installed - can be AllUsers or CurrentUser
+.PARAMETER Scope
+Scope where MicrosoftGraphPS module will be installed - can be AllUsers or CurrentUser
         
-    .PARAMETER CleanupOldMicrosoftGraphVersions
-    [switch] Removes old versions, if any found
+.PARAMETER CleanupOldMicrosoftGraphVersions
+[switch] Removes old versions, if any found
 
-    .PARAMETER InstallLatestMicrosoftGraph
-    [switch] Install latest version of Microsoft.Graph from PSGallery, if new version detected
+.PARAMETER InstallLatestMicrosoftGraph
+[switch] Install latest version of Microsoft.Graph from PSGallery, if new version detected
 
-    .PARAMETER ShowVersionDetails
-    [switch] Show version details (detailed)
+.PARAMETER ShowVersionDetails
+[switch] Show version details (detailed)
 
-    .INPUTS
-    None. You cannot pipe objects
+.INPUTS
+None. You cannot pipe objects
 
-    .OUTPUTS
-    Returns the data
+.OUTPUTS
+Returns the data
 
-    .EXAMPLE
+.EXAMPLE
 
-    # Show details of installed Microsoft.Graph
-    Manage-Version-Microsoft.Graph
+# Show details of installed Microsoft.Graph
+Manage-Version-Microsoft.Graph
 
-    # Show details of installed Microsoft.Graph including version details
-    Manage-Version-Microsoft.Graph -ShowVersionDetails
+# Show details of installed Microsoft.Graph including version details
+Manage-Version-Microsoft.Graph -ShowVersionDetails
 
-    # Show details of installed Microsoft.Graph and install latest (if found)
-    Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph
+# Show details of installed Microsoft.Graph and install latest (if found)
+Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph
 
-    # Show details of installed Microsoft.Graph and clean-up old versions (if found)
-    Manage-Version-Microsoft.Graph -CleanupOldMicrosoftGraphVersions
+# Show details of installed Microsoft.Graph and clean-up old versions (if found)
+Manage-Version-Microsoft.Graph -CleanupOldMicrosoftGraphVersions
 
-    # Show details, install latest (if found) and clean-up old versions (if found)
-    Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions
-
+# Show details, install latest (if found) and clean-up old versions (if found)
+Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions
 #>
     [CmdletBinding()]
     param(
@@ -394,24 +393,24 @@ Function Manage-Version-Microsoft.Graph
 
     #-----------------------------------------------------------------------------------------
 
-    Write-Host "[ 1 ] Checking if Microsoft Graph is installed"
+    Write-Host "Checking if Microsoft.Graph is installed"
         $Installed = Get-module Microsoft.Graph -ListAvailable
 
         If ($Installed)
             {    
                 Write-host ""
-                Write-Host "      OK - Microsoft Graph was detected"
+                Write-Host "   OK - Microsoft.Graph was detected"
             }
         Else
             {
                 Write-host ""
-                Write-Host "      Microsoft.Graph was not found on this computer - installing now !"
+                Write-Host "   Microsoft.Graph was not found on this computer - installing now !"
                 Install-module Microsoft.Graph -Scope $Scope -Force
             }
 
     #-----------------------------------------------------------------------------------------
         Write-host ""
-        Write-Host "[ 2 ] Checking if you are running latest version of Microsoft.Graph from PSGallery"
+        Write-Host "Checking if you are running latest version of Microsoft.Graph from PSGallery"
 
         $InstalledVersions = Get-module Microsoft.Graph -ListAvailable
         $InstalledVersionsCount = ($InstalledVersions | Measure-Object).count
@@ -420,7 +419,7 @@ Function Manage-Version-Microsoft.Graph
         If ($ShowVersionDetails)
             {
                 Write-host ""
-                Write-Host "      Installed versions of Microsoft.Graph are [ $($InstalledVersionsCount) ]"
+                Write-Host "   Installed versions of Microsoft.Graph are [ $($InstalledVersionsCount) ]"
                 $InstalledVersions | Select-Object Name, Version | ft
             }
 
@@ -433,27 +432,36 @@ Function Manage-Version-Microsoft.Graph
             {
                 $NewerVersionDetected = $true
                 Write-host ""
-                Write-host "      Newer version ($($online.version)) of Microsoft.Graph was detected in PSGallery"
+                Write-host "   Newer version ($($online.version)) of Microsoft.Graph was detected in PSGallery"
             }
         Else
             {
                 # No new version detected ... continuing !
                 Write-host ""
-                Write-host "      OK - Running latest version of Microsoft.Graph"
+                Write-host "   OK - Running latest version of Microsoft.Graph"
                 $NewerVersionDetected = $false
             }
 
     #-----------------------------------------------------------------------------------------
 
         Write-host ""
-        Write-Host "[ 3 ] Checking if you have any older versions of Microsoft Graph installed that may conflict and should be removed"
+        Write-Host "Checking if you have any older versions of Microsoft.Graph installed that may conflict and should be removed"
 
         $VersionsCleanup = $InstalledVersions | Where-Object { [version]$_.Version -lt [version]$Online.Version }
         $VersionsCleanupCount = ($VersionsCleanup | Measure-Object).count
 
-        Write-Host ""
-        Write-Host "      You have $VersionsCleanupCount older versions of Microsoft.Graph to remove"
-        Write-Host ""
+        If ($VersionsCleanupCount -gt 0)
+            {
+                Write-Host ""
+                Write-Host "   You have $VersionsCleanupCount older versions of Microsoft.Graph to remove"
+                Write-Host ""
+            }
+        ElseIf ($VersionsCleanupCount -eq 0)
+             {
+                Write-Host ""
+                Write-Host "   OK - You have no older versions of Microsoft.Graph installed"
+                Write-Host ""
+             }
 
         If ($ShowVersionDetails)
             {
@@ -471,8 +479,7 @@ Function Manage-Version-Microsoft.Graph
             }
         ElseIf ( ($InstallLatestMicrosoftGraph) -and ($NewerVersionDetected -eq $false) )
             {
-                Write-host ""
-                Write-host "OK - Running latest version of Microsoft.Graph"
+                # do nothing - already shown on screen earlier - OK - Running latest version of Microsoft.Graph"
             }
 
     #-----------------------------------------------------------------------------------------
@@ -500,8 +507,6 @@ Function Manage-Version-Microsoft.Graph
                                 }
 
                         }
-<#
-#>
                 }
         }
 }
@@ -511,8 +516,8 @@ Function Manage-Version-Microsoft.Graph
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDCRVw4G0Z4Jo9n
-# jtfCNpOkiN55or+nFpNuHSX8OBL5TqCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCArCQNpVeuq+9Cy
+# h94AcpYmHdLMyfckaJLqK345pzfd2qCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -620,17 +625,17 @@ Function Manage-Version-Microsoft.Graph
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIL4nWiOC6oPETUPNX5gpZcRt
-# zNKPZ0W/UKK3f6uNPDtvMA0GCSqGSIb3DQEBAQUABIICAKud7jhQ3qspKzs6VEbV
-# jFeJbKH6QicGJShL/3HxSbNfCHPHsPDbeU/iCoWeaOMbH9NGGhhQigQTqEH1Hgao
-# KVH/g0zzFR7Eez9UO/nutDD0aL/CIDDV7Jgtovyga6Z6OWex+voZgPsVpJqmI8TI
-# laUPPCQ+7H9aBGqll+Fe4XV/Z09NJBvYaoEOsgsxZ49ttQGyTSdpvTD0aHTd8qoI
-# HpT0zYjFcc9T6H35GUJIVyLh8ns+659FPwzyb4wqvPImeBh8LnUcVjd08Kp2HbQK
-# eBdoU5QH5JEPssb2mY3r6r6v65m6LesBSweU01i70+niIxZWXnu3cxUR5VtoE0Rq
-# j1Yzf6lQvtmM/OGbkOp/F8knn8d5sfgDpuy5Ei8SdpO+48ylBCw55gXQwFQ0Hddx
-# zm3eRq6Zv9iptnvOknVSOV63VebQ7WNicEJPxmNiHza6waG7vB4FBSz9SZftG/TL
-# NvcwvfEDS1jir24I8/L45tm1YrPvK7MQ43GA7+TNX3AqdL+mAWf3wZX7wWZrZ3Lx
-# l9o5H7XRbGkQbIhD8OXN9MuBDacLr2hJQi+h4uQHhjA28BVL/5Q2grTWT2yB48XN
-# SPqab+Yrdn+9shX12+G8Lkrb7/7PbusFSMxaunFBaoiem1FSNufPaDEeVfokwQGc
-# wOsEzoLGPOm2fPq+ZFGxsuI2
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIK9Ch7lopgH0WGNdRgH2IHJz
+# kqooMxYksbb+mgmIUR3WMA0GCSqGSIb3DQEBAQUABIICALbGfPY34SEq9OVa1IUK
+# 5Fwxh1/JBOYWAcwdzsRgehSE8UGLBR6hwwRMiyzUy5mSGp3iVRywm/3u0T6/ivTD
+# ROR3UuTRnlb69oyEqwrEox9NPpdf8AUOppdkFl4wiWN4/gADPK2acIyMmQB41Zcm
+# hMltRRx7vLMeww3Ql2t0Y17dBf1365e8OLRjiksKU9/9Mq57kqQtEXYXy3X9E0vb
+# 5GKAqpiqrxisGrECONO5SpSH2WFxP2+gl1/fAqah6PxTV7Qwtgmt8WY/LjcF6wUE
+# DYx8B1yLMKlw30MBM9Q9bkZxbrxB+CDGSxARNcKDmXyfvBgBg86MMk8wK/16jc12
+# WBPxqxK/JQwEplMUfvOcBtqiPg2ukvtLDy6lof8wxsNI78vlMDN8CViu59fcqfLm
+# dlefFkIEmsbpiPBsto83QK3bVLZxXpWuD7BMh0EgI2Zm67y0zfN2Q6Lxhfjc6xIC
+# 1ISf8Oq1RTrR3sShMpUrvH/MNM6VHGFhKjgwlcnIMKI+PProYF/otyuCMqD6dcL6
+# Vl/aw/6EjBiF6OtlxLLOmoAsw2MNpl5sCBlUvODrxFVnMyNqXZyjCyr83/iQ1OAW
+# hgT106+52IVINp9X0qeJLryy5nKySgtD8ENdvIx3Qi6NM1K21nIAG9pwleTRbBcP
+# a6ex++9H9bhnBfd/LRgJZJeB
 # SIG # End signature block

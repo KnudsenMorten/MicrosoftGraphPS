@@ -8,23 +8,23 @@ Install and Update MicrosoftGraphPS module
 Version management of Microsoft.Graph PS modules
 
 .DESCRIPTION
+
 MicrosoftGraphPS:
-    Install latest version of MicrosoftGraphPS, if not found
-    Updates to latest version of MicrosoftGraphPS, if switch ($AutoUpdate) is set to $True
+ Install latest version of MicrosoftGraphPS, if not found
+ Updates to latest version of MicrosoftGraphPS, if switch ($AutoUpdate) is set to $True
 
 Microsoft.Graph:
-    Installing latest version of Microsoft.Graph, if not found
-    Shows older installed versions of Microsoft.Graph
-    Checks if newer version if available from PSGallery of Microsoft.Graph
-    Automatic clean-up old versions of Microsoft.Graph
-    Update to latest version from PSGallery of Microsoft.Graph
+ Installing latest version of Microsoft.Graph, if not found
+ Shows older installed versions of Microsoft.Graph
+ Checks if newer version if available from PSGallery of Microsoft.Graph
+ Automatic clean-up old versions of Microsoft.Graph
+ Update to latest version from PSGallery of Microsoft.Graph
 
 .AUTHOR
 Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
 
 .LINK
 https://github.com/KnudsenMorten/MicrosoftGraphPS
-
 #>
 
 # Variables
@@ -39,16 +39,18 @@ If (!($ModuleCheck))    # MicrosoftGraphPS is NOT installed
         # check for NuGet package provider
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-        Write-Output ""
-        Write-Output "Checking Powershell PackageProvider NuGet ... Please Wait !"
+        Write-host ""
+        Write-host "Checking Powershell PackageProvider NuGet ... Please Wait !"
             if (Get-PackageProvider -ListAvailable -Name NuGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue) 
                 {
+                    Write-host ""
                     Write-Host "OK - PackageProvider NuGet is installed"
                 } 
             else 
                 {
                     try
                         {
+                            Write-host ""
                             Write-Host "Installing NuGet package provider .. Please Wait !"
                             Install-PackageProvider -Name NuGet -Scope $Scope -Confirm:$false -Force
                         }
@@ -58,11 +60,13 @@ If (!($ModuleCheck))    # MicrosoftGraphPS is NOT installed
                     }
                 }
 
-        Write-Output "Powershell module MicrosoftGraphPS was not found !"
-        Write-Output "Installing latest version from PsGallery in scope $Scope .... Please Wait !"
+        Write-host "Powershell module MicrosoftGraphPS was not found !"
+        Write-Host ""
+        Write-host "Installing latest version from PsGallery in scope $Scope .... Please Wait !"
+        Write-Host ""
 
         Install-module -Name MicrosoftGraphPS -Repository PSGallery -Force -Scope $Scope
-        import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+        import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking -WarningAction SilentlyContinue
     }
         
 Elseif ($ModuleCheck)    # MicrosoftGraphPS is installed - checking version, if it should be updated
@@ -71,28 +75,34 @@ Elseif ($ModuleCheck)    # MicrosoftGraphPS is installed - checking version, if 
         $ModuleCheck = Sort-Object -Descending -Property Version -InputObject $ModuleCheck
         $ModuleCheck = $ModuleCheck[0]
 
-        Write-Output "Checking latest version at PsGallery for MicrosoftGraphPS module"
+        Write-host "Checking latest version of MicrosoftGraphPS module at PsGallery"
         $online = Find-Module -Name MicrosoftGraphPS -Repository PSGallery
 
         #compare versions
         if ( ([version]$online.version) -gt ([version]$ModuleCheck.version) ) 
             {
-                Write-Output "Newer version ($($online.version)) detected"
+                write-host ""
+                Write-host "   Newer version ($($online.version)) detected"
 
                 If ($AutoUpdate -eq $true)
                     {
-                        Write-Output "Updating MicrosoftGraphPS module .... Please Wait !"
+                        write-host ""
+                        Write-host "   Updating MicrosoftGraphPS module .... Please Wait !"
+                        Write-Host ""
+
                         Update-module -Name MicrosoftGraphPS -Force
-                        import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+                        import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking -WarningAction SilentlyContinue
                     }
             }
         else
             {
                 # No new version detected ... continuing !
-                Write-Output "OK - Running latest version"
+                write-host ""
+                Write-host "   OK - Running latest version of MicrosoftGraphPS"
+                Write-Host ""
 
                 $UpdateAvailable = $False
-                import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+                import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking -WarningAction SilentlyContinue
             }
     }
 

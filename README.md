@@ -1,14 +1,12 @@
 # MicrosoftGraphPS
-Think of this PS-module as a helper for **Microsoft Graph connectivity** and **data management** using **Microsoft Graph**.
+Think of this PS-module as a helper for **Microsoft Graph version-management, connectivity** and **data management** using **Microsoft Graph**. More functions will be added when needed.
 
 | Function                       | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
-| CheckVersion-Microsoft.Graph   | Version management of Microsoft.Graph PS modules<br/>Installing latest version of Microsoft.Graph, if not found<br/>Shows older installed versions of Microsoft.Graph<br/>Checks if newer version if available from PSGallery of Microsoft.Graph<br/>Automatic clean-up old versions of Microsoft.Graph<br/>Update to latest version from PSGallery of Microsoft.Graph |
+| Manage-Version-Microsoft.Graph | Version management of Microsoft.Graph PS modules<br/>Installing latest version of Microsoft.Graph, if not found<br/>Shows older installed versions of Microsoft.Graph<br/>Checks if newer version if available from PSGallery of Microsoft.Graph<br/>Automatic clean-up old versions of Microsoft.Graph<br/>Update to latest version from PSGallery of Microsoft.Graph |
 | Connect-MicrosoftGraphPS       | Connect to Microsoft Graph using Azure App & Secret<br/>Connect to Microsoft Graph using Azure App & Certificate Thumprint<br/>Connect to Microsoft Graph using interactive login and scope |
 | Invoke-MgGraphRequestPS        | Invoke command with pagination support to get/put/post/patch/delete data using Microsoft Graph REST endpoint. |
 | InstallUpdate-MicrosoftGraphPS | Install latest version of MicrosoftGraphPS, if not found<br/>Update to latest version of MicrosoftGraphPS, if switch (-AutoUpdate) is set |
-
-More functions will be added in the future.
 
 
 
@@ -18,7 +16,7 @@ Microsoft Graph v2.x
 
 
 
-## Installation / Automatic Update of MicrosoftGraphPS module from PSGallery
+## Pre-req Installation / Automatic Update of MicrosoftGraphPS module from PSGallery
 
 I have prepared a script for you shown below - or [you can download it here](https://raw.githubusercontent.com/KnudsenMorten/MicrosoftGraphPS/main/Install-Update-MicrosoftGraphPS.ps1). 
 
@@ -39,22 +37,33 @@ $Scope      = "AllUsers"  # Valid parameters: AllUsers, CurrentUser
 $AutoUpdate = $True
 ```
 
-    ###################################
-    # Install-Update-MicrosoftGraphPS
-    ###################################
-    <#
-        .SYNOPSIS
-        Install and Update MicrosoftGraphPS module
+    ##########################################################################################
+    # Pre-req script for getting environment ready with Microsoft.Graph and MicrosoftGraphPS
+    ##########################################################################################
     
-        .DESCRIPTION
+    <#
+    .SYNOPSIS
+    Install and Update MicrosoftGraphPS module
+    Version management of Microsoft.Graph PS modules
+    
+    .DESCRIPTION
+    MicrosoftGraphPS:
         Install latest version of MicrosoftGraphPS, if not found
         Updates to latest version of MicrosoftGraphPS, if switch ($AutoUpdate) is set to $True
     
-        .AUTHOR
-        Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+    Microsoft.Graph:
+        Installing latest version of Microsoft.Graph, if not found
+        Shows older installed versions of Microsoft.Graph
+        Checks if newer version if available from PSGallery of Microsoft.Graph
+        Automatic clean-up old versions of Microsoft.Graph
+        Update to latest version from PSGallery of Microsoft.Graph
     
-        .LINK
-        https://github.com/KnudsenMorten/MicrosoftGraphPS
+    .AUTHOR
+    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+    
+    .LINK
+    https://github.com/KnudsenMorten/MicrosoftGraphPS
+    
     #>
     
     # Variables
@@ -94,7 +103,7 @@ $AutoUpdate = $True
             Install-module -Name MicrosoftGraphPS -Repository PSGallery -Force -Scope $Scope
             import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
         }
-        
+            
     Elseif ($ModuleCheck)    # MicrosoftGraphPS is installed - checking version, if it should be updated
         {
             # sort to get highest version, if more versions are installed
@@ -107,23 +116,30 @@ $AutoUpdate = $True
             #compare versions
             if ( ([version]$online.version) -gt ([version]$ModuleCheck.version) ) 
                 {
-                    Write-Output "Newer version ($($online.version)) detected"
-                    If ($AutoUpdate -eq $true)
-                     {
+                Write-Output "Newer version ($($online.version)) detected"
+    
+                If ($AutoUpdate -eq $true)
+                    {
                         Write-Output "Updating MicrosoftGraphPS module .... Please Wait !"
                         Update-module -Name MicrosoftGraphPS -Force
                         import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
-                     }
+                    }
                 }
             else
                 {
-                    # No new version detected ... continuing !
-                    Write-Output "OK - Running latest version"
+                # No new version detected ... continuing !
+                Write-Output "OK - Running latest version"
     
-                    $UpdateAvailable = $False
-                    import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+                $UpdateAvailable = $False
+                import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
                 }
-        }  
+        }
+    
+    ##########################################################################################
+    # Install-Update-Cleanup-Microsoft.Graph
+    ##########################################################################################
+    CheckVersion-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions
+    
 
 
 
@@ -131,7 +147,7 @@ $AutoUpdate = $True
 
 
 
-## CheckVersion-Microsoft.Graph
+## Manage-Version-Microsoft.Graph
 
 ```
 .SYNOPSIS
@@ -152,7 +168,7 @@ https://github.com/KnudsenMorten/MicrosoftGraphPS
 
 .PARAMETER Scope
 Scope where MicrosoftGraphPS module will be installed - can be AllUsers or CurrentUser
-
+        
 .PARAMETER CleanupOldMicrosoftGraphVersions
 [switch] Removes old versions, if any found
 
@@ -171,19 +187,20 @@ Returns the data
 .EXAMPLE
 
 # Show details of installed Microsoft.Graph
-CheckVersion-Microsoft.Graph
+Manage-Version-Microsoft.Graph
 
 # Show details of installed Microsoft.Graph including version details
-CheckVersion-Microsoft.Graph -ShowVersionDetails
+Manage-Version-Microsoft.Graph -ShowVersionDetails
 
 # Show details of installed Microsoft.Graph and install latest (if found)
-CheckVersion-Microsoft.Graph -InstallLatestMicrosoftGraph
+Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph
 
 # Show details of installed Microsoft.Graph and clean-up old versions (if found)
-CheckVersion-Microsoft.Graph -CleanupOldMicrosoftGraphVersions
+Manage-Version-Microsoft.Graph -CleanupOldMicrosoftGraphVersions
 
 # Show details, install latest (if found) and clean-up old versions (if found)
-CheckVersion-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions
+Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions
+
 ```
 
 
