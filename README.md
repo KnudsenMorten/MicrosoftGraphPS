@@ -1,4 +1,6 @@
 # MicrosoftGraphPS
+I'm really happy to announce my newest PS-module, MicrosoftGraphPS.
+
 Think of this PS-module as a helper for **Microsoft Graph version-management, connectivity** and **data management** using **Microsoft Graph**. More functions will be added when needed.
 
 | Function                       | Funtionality                                                 |
@@ -7,6 +9,12 @@ Think of this PS-module as a helper for **Microsoft Graph version-management, co
 | Connect-MicrosoftGraphPS       | Connect to Microsoft Graph using Azure App & Secret<br/>Connect to Microsoft Graph using Azure App & Certificate Thumprint<br/>Connect to Microsoft Graph using interactive login and scope |
 | Invoke-MgGraphRequestPS        | Invoke command with pagination support to get/put/post/patch/delete data using Microsoft Graph REST endpoint. |
 | InstallUpdate-MicrosoftGraphPS | Install latest version of MicrosoftGraphPS, if not found<br/>Update to latest version of MicrosoftGraphPS, if switch (-AutoUpdate) is set |
+
+
+
+## Download of MicrosoftGraphPS
+
+You can [find MicrosoftGraph here](https://raw.githubusercontent.com/KnudsenMorten/MicrosoftGraphPS/main/MicrosoftGraphPS.psm1) - or from [Powershell Gallery using this link](https://www.powershellgallery.com/packages/MicrosoftGraphPS)
 
 
 
@@ -21,6 +29,10 @@ Think of this PS-module as a helper for **Microsoft Graph version-management, co
 Connect-MicrosoftGraphPS -AppId $global:HighPriv_Modern_ApplicationID_Azure `
                          -Secret $global:HighPriv_Modern_Application_Secret_Azure `
                          -TenantId $global:AzureTenantID
+
+Output:
+Connecting to Microsoft Graph using Azure App & Secret
+Welcome To Microsoft Graph!                         
 ```
 
 
@@ -32,9 +44,15 @@ Connect-MicrosoftGraphPS -AppId $global:HighPriv_Modern_ApplicationID_Azure `
 Connect-MicrosoftGraphPS -AppId $global:HighPriv_Modern_ApplicationID_Azure `
                          -CertificateThumbprint $global:HighPriv_Modern_CertificateThumbprint_Azure `
                          -TenantId $global:AzureTenantID
+
+Output:
+Connecting to Microsoft Graph using Azure App & CertificateThumprint
+Welcome To Microsoft Graph!                         
 ```
 
 
+
+![]()
 
 #### Connectivity using interactive login and scopes
 
@@ -54,6 +72,13 @@ Connect-MicrosoftGraphPS -Scopes $Scopes
 ```
 # Show Permissions in the current context
 Connect-MicrosoftGraphPS -ShowMgContextExpandScopes
+
+Output:
+Agreement.ReadWrite.All
+TeamSettings.ReadWrite.All
+CustomSecAttributeDefinition.ReadWrite.All
+SecurityAlert.ReadWrite.All
+TeamMember.Read.All
 ```
 
 
@@ -63,6 +88,25 @@ Connect-MicrosoftGraphPS -ShowMgContextExpandScopes
 ```
 # Show context of current Microsoft Graph context
 Connect-MicrosoftGraphPS -ShowMgContext
+
+Output:
+ClientId               : 9283fsssssssss9a4f-2a9b521c91f9
+TenantId               : be2sssssssssa6-ae25-9b9db2c9061b
+Scopes                 : {Agreement.ReadWrite.All, TeamSettings.ReadWrite.All, CustomSecAttributeDefinition.ReadWrite.All, SecurityAlert.ReadWrite.Al
+                         l...}
+AuthType               : AppOnly
+TokenCredentialType    : ClientSecret
+CertificateThumbprint  : 
+CertificateSubjectName : 
+Account                : 
+AppName                : xxxxxx - Automation - Azure
+ContextScope           : Process
+Certificate            : 
+PSHostVersion          : 5.1.17763.4644
+ManagedIdentityId      : 
+ClientSecret           : System.Security.SecureString
+Environment            : Global
+
 ```
 
 
@@ -84,7 +128,6 @@ $Devices    = Invoke-MgGraphRequestPS -Uri $Uri -Method GET -OutputType PSObject
 
 ```
 $Devices = Get-MgDeviceManagementManagedDevice
-$Devices
 ```
 
 
