@@ -1,7 +1,7 @@
 # MicrosoftGraphPS
 Think of this PS-module as a helper for **Microsoft Graph version-management, connectivity** and **data management** using **Microsoft Graph**. More functions will be added when needed.
 
-| Function                       | Description                                                  |
+| Function                       | Funtionality                                                 |
 | ------------------------------ | ------------------------------------------------------------ |
 | Manage-Version-Microsoft.Graph | Version management of Microsoft.Graph PS modules<br/>Installing latest version of Microsoft.Graph, if not found<br/>Shows older installed versions of Microsoft.Graph<br/>Checks if newer version if available from PSGallery of Microsoft.Graph<br/>Automatic clean-up old versions of Microsoft.Graph<br/>Update to latest version from PSGallery of Microsoft.Graph |
 | Connect-MicrosoftGraphPS       | Connect to Microsoft Graph using Azure App & Secret<br/>Connect to Microsoft Graph using Azure App & Certificate Thumprint<br/>Connect to Microsoft Graph using interactive login and scope |
@@ -10,7 +10,86 @@ Think of this PS-module as a helper for **Microsoft Graph version-management, co
 
 
 
-## Pre-req script for getting environment ready with Microsoft.Graph and MicrosoftGraphPS
+## Connectivity to Microsoft Graph using MicrosoftGraphPS
+
+
+
+#### Connectivity with App & Secret
+
+```
+# Microsoft Graph connect with AzApp & CertificateThumprint
+Connect-MicrosoftGraphPS -AppId $global:HighPriv_Modern_ApplicationID_Azure `
+                         -Secret $global:HighPriv_Modern_Application_Secret_Azure `
+                         -TenantId $global:AzureTenantID
+```
+
+
+
+#### Connectivity with App & CertificateThumbprint
+
+```
+# Microsoft Graph connect with AzApp & CertificateThumprint
+Connect-MicrosoftGraphPS -AppId $global:HighPriv_Modern_ApplicationID_Azure `
+                         -CertificateThumbprint $global:HighPriv_Modern_CertificateThumbprint_Azure `
+                         -TenantId $global:AzureTenantID
+```
+
+
+
+#### Connectivity using interactive login and scopes
+
+```
+# Microsoft Graph connect with interactive login with the permission defined in the scopes
+$Scopes = @("DeviceManagementConfiguration.ReadWrite.All",`
+            "DeviceManagementManagedDevices.ReadWrite.All",`
+            "DeviceManagementServiceConfig.ReadWrite.All"
+            )
+Connect-MicrosoftGraphPS -Scopes $Scopes
+```
+
+
+
+#### Show permissions in the current context
+
+```
+# Show Permissions in the current context
+Connect-MicrosoftGraphPS -ShowMgContextExpandScopes
+```
+
+
+
+#### Show context of current Microsoft Graph context
+
+```
+# Show context of current Microsoft Graph context
+Connect-MicrosoftGraphPS -ShowMgContext
+```
+
+
+
+## Get data from Microsoft Graph using 2 methods: MgGraph REST endpoint or MgGraph Cmdlets (if available)
+
+
+
+#### Method 1: Invoke-MgGraphRequestPS GET with REST endpoint (supports pagination)
+
+```
+$Uri        = "https://graph.microsoft.com/v1.0/devicemanagement/managedDevices"
+$Devices    = Invoke-MgGraphRequestPS -Uri $Uri -Method GET -OutputType PSObject
+```
+
+
+
+#### Method 2 (prefered): MgGraph Cmdlets (if available)
+
+```
+$Devices = Get-MgDeviceManagementManagedDevice
+$Devices
+```
+
+
+
+# Pre-req script for getting environment ready with Microsoft.Graph and MicrosoftGraphPS
 
 Just copy the entire script-code below into the beginning of your script - and change the variables according to your needs as outlined below.
 
