@@ -332,9 +332,9 @@ $ConnectAuth = Connect-MicrosoftRestApiEndpointPS -AppId $global:HighPriv_Modern
 #### Get data from REST API like Defender for Endpoint (securitycenter api)
 
 ```
-$Result = Invoke-MicrosoftRestApiRequestPS -Uri "https://api.securitycenter.microsoft.com/api/machines" `
-                                           -Method GET `
-                                           -Headers $ConnectAuth[1]
+Invoke-MicrosoftRestApiRequestPS -Uri "https://api.securitycenter.microsoft.com/api/machines" `
+                                 -Method GET `
+                                 -Headers $ConnectAuth[1]
 ```
 
 
