@@ -132,6 +132,90 @@ Function Connect-MicrosoftGraphPS
 }
 
 
+Function Connect-MicrosoftRestApiEndpointPS
+{
+<#
+.SYNOPSIS
+Connect to REST API endpoint
+
+.DESCRIPTION
+Connect to REST API endpoint like https://api.securitycenter.microsoft.com
+
+.AUTHOR
+Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+.LINK
+https://github.com/KnudsenMorten/MicrosoftGraphPS
+
+.PARAMETER Uri
+This is the Uri for the REST endpoint in Microsoft Graph
+
+.PARAMETER AppId
+This is the Azure app id
+        
+.PARAMETER AppSecret
+This is the secret of the Azure app
+
+.PARAMETER TenantId
+This is the Azure AD tenant id
+
+.INPUTS
+None. You cannot pipe objects
+
+.OUTPUTS
+Connection Header & Token
+
+.EXAMPLE
+$ConnectAuth = Connect-MicrosoftRestApiEndpointPS -AppId $global:HighPriv_Modern_ApplicationID_O365 `
+                                                  -AppSecret $global:HighPriv_Modern_Secret_O365 `
+                                                  -TenantId $global:AzureTenantID `
+                                                  -Uri "https://api.securitycenter.microsoft.com"
+
+
+#>
+[CmdletBinding()]
+param(
+        [Parameter(mandatory)]
+            [string]$Uri,
+        [Parameter()]
+            [string]$AppId,
+        [Parameter()]
+            [string]$AppSecret,
+        [Parameter()]
+            [string]$TenantId
+        )
+
+<#  TROUBLESHOOTING
+    $AppId     = $global:HighPriv_Modern_ApplicationID_O365
+    $AppSecret = $global:HighPriv_Modern_Secret_O365
+    $TenantId  = $global:AzureTenantID
+    $Uri       = "https://api.securitycenter.microsoft.com"
+#>
+
+    # Get Token
+        $oAuthUri = "https://login.microsoftonline.com/$($TenantID)/oauth2/token"
+        $authBody = [Ordered] @{
+                                 resource = $Uri
+                                 client_id = $AppId
+                                 client_secret = $AppSecret
+                                 grant_type = 'client_credentials'
+                               }
+
+        $AuthResponse = Invoke-RestMethod -Method Post -Uri $oAuthUri -Body $authBody -ErrorAction Stop
+
+        $Token = $AuthResponse.access_token
+
+    # Set the WebRequest headers
+        $Headers = @{
+                        'Content-Type' = 'application/json'
+                        Accept = 'application/json'
+                        Authorization = "Bearer $token"
+                    }
+
+    Return $Token, $Headers
+}
+
+
 Function InstallUpdate-MicrosoftGraphPS
 {
 <#
@@ -320,6 +404,134 @@ Function Invoke-MgGraphRequestPS
                 } 
             while (!([string]::IsNullOrEmpty($ResultsRaw.'@odata.nextLink'))) 
         } 
+    Return $Result
+}
+
+
+Function Invoke-MicrosoftRestApiRequestPS
+{
+<#
+    .SYNOPSIS
+    Invoke command to get/put/post/patch/delete data using Microsoft REST API endpoint
+
+    .DESCRIPTION
+    Get data using Microsoft REST API endpoint like GET https://api.securitycenter.microsoft.com/api/machines
+
+    .AUTHOR
+    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+    .LINK
+    https://github.com/KnudsenMorten/MicrosoftGraphPS
+
+    .PARAMETER Uri
+    This is the Uri for the REST endpoint in Microsoft Graph
+        
+    .PARAMETER Method
+    This is the method to handle the data (GET, PUT, DELETE, POST, PATCH)
+
+    .PARAMETER Header
+    This is the Header coming from Connect-MicrosoftRestApiEndpointPS
+
+    .INPUTS
+    None. You cannot pipe objects
+
+    .OUTPUTS
+    Returns the data
+
+    .EXAMPLE
+    $Result = Invoke-MicrosoftRestApiRequestPS -Uri "https://api.securitycenter.microsoft.com/api/machines" `
+                                               -Method GET `
+                                               -Headers $ConnectAuth[1]
+
+    # Show Result
+    $Result
+#>
+    [CmdletBinding()]
+    param(
+            [Parameter(mandatory)]
+                [string]$Uri,
+            [Parameter(mandatory)]
+                [ValidateSet("GET", "DELETE", "POST", "PUT", "PATCH", IgnoreCase = $false)] 
+                $Method = "GET",
+            [Parameter(mandatory)]
+                [Object]$Headers
+         )
+
+<#   TROUBLESHOOTING
+    $Uri     = "https://api.securitycenter.microsoft.com/api/machines"
+    $Method  = "GET"
+    $Headers = $ConnectAuth[1]
+#>
+
+    $ResponseAllRecords = @()
+    Do
+        {
+            Write-host ""
+
+                try 
+                    {
+                        $ResponseRaw = Invoke-WebRequest -Method $Method -Uri $Uri -Headers $Headers
+                        $ResponseAllRecords += $ResponseRaw.content
+                        $ResponseRawJSON = ($ResponseRaw | ConvertFrom-Json)
+                        $ResultsCount += ( ($ResponseRaw.content | ConvertFrom-Json).value | Measure-Object).count
+                        Write-host "[ $($ResultsCount) ]  Getting data from $($Uri) using REST Api endpoint"
+
+
+                        if ($ResponseRawJSON.'@odata.nextLink')
+                            {
+                                $Uri = $ResponseRawJSON.'@odata.nextLink'
+                            } 
+                        else 
+                            {
+                                $Uri = $null
+                            }
+
+                    }
+                catch 
+                    {
+                        Write-host ""
+                        Write-host "StatusCode: " $_.Exception.Response.StatusCode.value__
+                        Write-host "StatusDescription:" $_.Exception.Response.StatusDescription
+                        Write-host ""
+  
+                        if ($_.ErrorDetails.Message)
+                            {
+                                Write-host ""
+                                Write-host "Inner Error: $_.ErrorDetails.Message"
+                                Write-host ""
+                            }
+  
+                        # check for a specific error so that we can retry the request otherwise, set the url to null so that we fall out of the loop
+                        if ($_.Exception.Response.StatusCode.value__ -eq 403 )
+                            {
+                                # just ignore, leave the url the same to retry but pause first
+                                if ($retryCount -ge $maxRetries)
+                                    {
+                                        # not going to retry again
+                                        $Uri = $null
+                                        Write-host 'Not going to retry...'
+                                    }
+                                else 
+                                    {
+                                        $retryCount += 1
+                                        write-host ""
+                                        Write-host "Retry attempt $retryCount after a $pauseDuration second pause..."
+                                        Write-host ""
+                                        Start-Sleep -Seconds $pauseDuration
+                                    }
+                            }
+                            else
+                                {
+                                    # not going to retry -- set the url to null to fall back out of the while loop
+                                    $Uri = $null
+                                }
+                    }
+
+        }
+    while (!([string]::IsNullOrEmpty($Uri)))
+
+    $Result = ($ResponseAllRecords | ConvertFrom-Json).value
+
     Return $Result
 }
 
@@ -516,8 +728,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCArCQNpVeuq+9Cy
-# h94AcpYmHdLMyfckaJLqK345pzfd2qCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCRB6Ehf1NR8ZqA
+# M6kYWEvCTYnvEfktDNHgF5apkj+5dqCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -625,17 +837,17 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIK9Ch7lopgH0WGNdRgH2IHJz
-# kqooMxYksbb+mgmIUR3WMA0GCSqGSIb3DQEBAQUABIICALbGfPY34SEq9OVa1IUK
-# 5Fwxh1/JBOYWAcwdzsRgehSE8UGLBR6hwwRMiyzUy5mSGp3iVRywm/3u0T6/ivTD
-# ROR3UuTRnlb69oyEqwrEox9NPpdf8AUOppdkFl4wiWN4/gADPK2acIyMmQB41Zcm
-# hMltRRx7vLMeww3Ql2t0Y17dBf1365e8OLRjiksKU9/9Mq57kqQtEXYXy3X9E0vb
-# 5GKAqpiqrxisGrECONO5SpSH2WFxP2+gl1/fAqah6PxTV7Qwtgmt8WY/LjcF6wUE
-# DYx8B1yLMKlw30MBM9Q9bkZxbrxB+CDGSxARNcKDmXyfvBgBg86MMk8wK/16jc12
-# WBPxqxK/JQwEplMUfvOcBtqiPg2ukvtLDy6lof8wxsNI78vlMDN8CViu59fcqfLm
-# dlefFkIEmsbpiPBsto83QK3bVLZxXpWuD7BMh0EgI2Zm67y0zfN2Q6Lxhfjc6xIC
-# 1ISf8Oq1RTrR3sShMpUrvH/MNM6VHGFhKjgwlcnIMKI+PProYF/otyuCMqD6dcL6
-# Vl/aw/6EjBiF6OtlxLLOmoAsw2MNpl5sCBlUvODrxFVnMyNqXZyjCyr83/iQ1OAW
-# hgT106+52IVINp9X0qeJLryy5nKySgtD8ENdvIx3Qi6NM1K21nIAG9pwleTRbBcP
-# a6ex++9H9bhnBfd/LRgJZJeB
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIO7qbzN1zkfZDI41CW2dfj3F
+# J0duGG1m6iGfsuf/RxjEMA0GCSqGSIb3DQEBAQUABIICAH8wAb2//lbdKcd5IE5h
+# miE0Kd+cndeu5Az4akVekGmLISsHsHJ5sN7lpas+3FOX069s5GdN2+i+K0ebaBTB
+# Y4gN+56GWwyUVnQlnUgx1Nr3Eyt14kz+UcinW9JwAqcKPEos9eM+RDUGxYvhcKHz
+# HWQBc4boEtovCw3asNXYhVYKu/3kUmU3HKjHbMU4t2PjAOC6rvWjfPUH8FpScRD+
+# KKTUPvCNLDVn/z1hb678WZFZ3Ddaq1GP8SCxhk6SyFrkIAnwvPN6MtxiiFzRZEng
+# gbGtfOS8gABuWNU7+rVl2/PAC9/0t48n3nJTg79GLhyhHAp5AFlPmVwRJUSEnADF
+# T0xlOsxJKjMwSZVurIf/d3OPg0ecNAr3rg9H/h+L8pCglLVL7uEhmV/Z5i5b/OU+
+# TDUM3HZVLROXz0JiHuOsXhiQFGqyBDRB2NuWhNu8mDLQlGnbvxY0fdsibtszKQ05
+# JWuYCgVeQvm3AZoU6S7aomC6k10KWqTLb2RXP7Q6U//jsIk8CYCHooKkpDroBTk2
+# EgCYVxa5iiCRTXdkQ5/hOwsBQcKc2CreM4aP+XKWKx9lPFz8zxu7YSj6EcH0j5dD
+# E49WBTvU/UjYUs0jTDCXnuBbQtlULBbCIR6BUXEs/NK7sDRdFtlRTG2iQyN/8O9F
+# 4CDtHdZv9HMfQerpod9By66w
 # SIG # End signature block
