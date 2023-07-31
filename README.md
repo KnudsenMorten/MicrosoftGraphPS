@@ -1,34 +1,16 @@
 # MicrosoftGraphPS
 I'm really happy to announce my newest PS-module, **MicrosoftGraphPS**.
 
-Think of this PS-module as a helper for **Microsoft Graph version-management, connectivity** and **data management** using **Microsoft Graph**. More functions will be added when needed.
+Think of this PS-module as a helper for **Microsoft Graph version-management, connectivity** and **data management** using **Microsoft Graph**. It does also support **generic Microsoft REST API connectivity** and **data management** like https://api.securitycenter.microsoft.com/api/machines. More functions will be added when needed.
 
-| Function                       | Funtionality                                                 |
-| ------------------------------ | ------------------------------------------------------------ |
-| Manage-Version-Microsoft.Graph | Version management of Microsoft.Graph PS modules<br/>Installing latest version of Microsoft.Graph, if not found<br/>Shows older installed versions of Microsoft.Graph<br/>Checks if newer version if available from PSGallery of Microsoft.Graph<br/>Automatic clean-up old versions of Microsoft.Graph<br/>Update to latest version from PSGallery of Microsoft.Graph |
-| Connect-MicrosoftGraphPS       | Connect to Microsoft Graph using Azure App & Secret<br/>Connect to Microsoft Graph using Azure App & Certificate Thumprint<br/>Connect to Microsoft Graph using interactive login and scope |
-| Invoke-MgGraphRequestPS        | Invoke command with pagination support to get/put/post/patch/delete data using Microsoft Graph REST endpoint. |
-| InstallUpdate-MicrosoftGraphPS | Install latest version of MicrosoftGraphPS, if not found<br/>Update to latest version of MicrosoftGraphPS, if switch (-AutoUpdate) is set |
-
-
-
-**Updating both Microsoft.Graph and MicrosoftGraphPS**
-
-![Connect](img/Prereq-0.jpg)
-
-
-
-**Removing old Microsoft.Graph**
-
-![Removing](img/prereq-3.jpg)
-
-
-
-**Everything OK**
-
-![Connect](img/prereq-2.jpg)
-
-
+| Function                           | Funtionality                                                 |
+| ---------------------------------- | ------------------------------------------------------------ |
+| Manage-Version-Microsoft.Graph     | Version management of Microsoft.Graph PS modules<br/>Installing latest version of Microsoft.Graph, if not found<br/>Shows older installed versions of Microsoft.Graph<br/>Checks if newer version if available from PSGallery of Microsoft.Graph<br/>Automatic clean-up old versions of Microsoft.Graph<br/>Update to latest version from PSGallery of Microsoft.Graph<br/>Remove all versions of Microsoft.Graph (complete re-install) |
+| InstallUpdate-MicrosoftGraphPS     | Install latest version of MicrosoftGraphPS, if not found<br/>Update to latest version of MicrosoftGraphPS, if switch (-AutoUpdate) is set |
+| Connect-MicrosoftGraphPS           | Connect to Microsoft Graph using Azure App & Secret<br/>Connect to Microsoft Graph using Azure App & Certificate Thumprint<br/>Connect to Microsoft Graph using interactive login and scope |
+| Invoke-MgGraphRequestPS            | Invoke command with pagination support to get/put/post/patch/delete data using Microsoft Graph REST endpoint. |
+| Connect-MicrosoftRestApiEndpointPS | Connect to REST API endpoint like https://api.securitycenter.microsoft.com using Azure App & Secret |
+| Invoke-MicrosoftRestApiRequestPS   | Invoke command to get/put/post/patch/delete data using Microsoft REST API endpoint<br/>Get data using Microsoft REST API endpoint like <br/>https://api.securitycenter.microsoft.com/api/machines |
 
 
 
@@ -38,11 +20,197 @@ You can [find MicrosoftGraph here](https://raw.githubusercontent.com/KnudsenMort
 
 
 
-## Connectivity to Microsoft Graph using MicrosoftGraphPS
+## Version Management
 
 
 
-#### Connectivity with App & Secret
+#### Install / Update MicrosoftGraphPS (pre-req to get access to functions)
+
+Just copy the entire script-code below into the beginning of your script - and change the variables according to your needs as outlined below.
+
+You can also [download the script here](https://raw.githubusercontent.com/KnudsenMorten/MicrosoftGraphPS/main/Install-Update-MicrosoftGraphPS-Microsoft.Graph.ps1). 
+
+You can run the pre-req code as part of your script and it will be able to update to latest version and remove old versions, if desired.
+
+
+
+##### Variables
+
+```
+$Scope      = "AllUsers"  # Valid parameters: AllUsers, CurrentUser
+$AutoUpdate = $True
+```
+
+$Scope controls where MicrosoftGraphPS PS-module is installed (AllUsers, CurrentUser)
+
+You can auto-update to latest version of MicrosoftGraphPS, if you set $AutoUpdate to $True. 
+
+If you want to control which version, you can disable AutoUpdate ($AutoUpdate = $False)
+
+
+
+```
+##########################################################################################
+# Pre-req script for getting environment ready with Microsoft.Graph and MicrosoftGraphPS
+##########################################################################################
+
+<#
+.SYNOPSIS
+Install and Update MicrosoftGraphPS module
+Version management of Microsoft.Graph PS modules
+
+.DESCRIPTION
+
+MicrosoftGraphPS:
+ Install latest version of MicrosoftGraphPS, if not found
+ Updates to latest version of MicrosoftGraphPS, if switch ($AutoUpdate) is set to $True
+
+Microsoft.Graph:
+ Installing latest version of Microsoft.Graph, if not found
+ Shows older installed versions of Microsoft.Graph
+ Checks if newer version if available from PSGallery of Microsoft.Graph
+ Automatic clean-up old versions of Microsoft.Graph
+ Update to latest version from PSGallery of Microsoft.Graph
+
+.AUTHOR
+Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+.LINK
+https://github.com/KnudsenMorten/MicrosoftGraphPS
+#>
+
+# Variables
+$Scope      = "AllUsers"  # Valid parameters: AllUsers, CurrentUser
+$AutoUpdate = $True
+
+# Check if MicrosoftGraphPS is installed
+$ModuleCheck = Get-Module -Name MicrosoftGraphPS -ListAvailable -ErrorAction SilentlyContinue
+
+If (!($ModuleCheck))    # MicrosoftGraphPS is NOT installed
+    {
+        # check for NuGet package provider
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+        Write-host ""
+        Write-host "Checking Powershell PackageProvider NuGet ... Please Wait !"
+            if (Get-PackageProvider -ListAvailable -Name NuGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue) 
+                {
+                    Write-host ""
+                    Write-Host "OK - PackageProvider NuGet is installed"
+                } 
+            else 
+                {
+                    try
+                        {
+                            Write-host ""
+                            Write-Host "Installing NuGet package provider .. Please Wait !"
+                            Install-PackageProvider -Name NuGet -Scope $Scope -Confirm:$false -Force
+                        }
+                    catch [Exception] {
+                        $_.message 
+                        exit
+                    }
+                }
+
+        Write-host "Powershell module MicrosoftGraphPS was not found !"
+        Write-Host ""
+        Write-host "Installing latest version from PsGallery in scope $Scope .... Please Wait !"
+        Write-Host ""
+
+        Install-module -Name MicrosoftGraphPS -Repository PSGallery -Force -Scope $Scope
+        import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking -WarningAction SilentlyContinue
+    }
+        
+Elseif ($ModuleCheck)    # MicrosoftGraphPS is installed - checking version, if it should be updated
+    {
+        # sort to get highest version, if more versions are installed
+        $ModuleCheck = Sort-Object -Descending -Property Version -InputObject $ModuleCheck
+        $ModuleCheck = $ModuleCheck[0]
+
+        Write-host "Checking latest version of MicrosoftGraphPS module at PsGallery"
+        $online = Find-Module -Name MicrosoftGraphPS -Repository PSGallery
+
+        #compare versions
+        if ( ([version]$online.version) -gt ([version]$ModuleCheck.version) ) 
+            {
+                write-host ""
+                Write-host "   Newer version ($($online.version)) detected"
+
+                If ($AutoUpdate -eq $true)
+                    {
+                        write-host ""
+                        Write-host "   Updating MicrosoftGraphPS module .... Please Wait !"
+                        Write-Host ""
+
+                        Update-module -Name MicrosoftGraphPS -Force
+                        import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking -WarningAction SilentlyContinue
+                    }
+            }
+        else
+            {
+                # No new version detected ... continuing !
+                write-host ""
+                Write-host "   OK - Running latest version of MicrosoftGraphPS"
+                Write-Host ""
+
+                $UpdateAvailable = $False
+                import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking -WarningAction SilentlyContinue
+            }
+    }
+
+##########################################################################################
+# Install-Update-Cleanup-Microsoft.Graph
+##########################################################################################
+If ($AutoUpdate)
+    {
+        Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions -Scope $Scope
+    }
+Else
+    {
+        Manage-Version-Microsoft.Graph -Scope $Scope
+    }
+
+```
+
+
+
+**Updating Microsoft.Graph to latest version**
+
+```
+# Show details, install latest (if found) and clean-up old versions (if found)
+Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -Scope AllUsers
+```
+
+![Connect](img/Prereq-0.jpg)
+
+
+
+**Clean-up older Microsoft.Graph versions (except the latest available version)**
+
+```
+# Show details, install latest (if found) and clean-up old versions (if found)
+Manage-Version-Microsoft.Graph -CleanupOldMicrosoftGraphVersions
+```
+
+![Removing](img/prereq-3.jpg)
+
+
+
+**Remove all Microsoft.Graph versions**
+
+```
+Manage-Version-Microsoft.Graph -RemoveAllMicrosoftGraphVersions
+```
+
+![Removing](img/prereq-4.jpg)
+
+
+
+## MgGraph: Connectivity to Microsoft Graph using MicrosoftGraphPS
+
+
+
+#### MgGraph: Connectivity with App & Secret
 
 ```
 # Microsoft Graph connect with AzApp & CertificateThumprint
@@ -57,7 +225,7 @@ Welcome To Microsoft Graph!
 
 
 
-#### Connectivity with App & CertificateThumbprint
+#### MgGraph: Connectivity with App & CertificateThumbprint
 
 ```
 # Microsoft Graph connect with AzApp & CertificateThumprint
@@ -72,9 +240,7 @@ Welcome To Microsoft Graph!
 
 
 
-
-
-#### Connectivity using interactive login and scopes
+#### MgGraph: Connectivity using interactive login and scopes
 
 ```
 # Microsoft Graph connect with interactive login with the permission defined in the scopes
@@ -87,7 +253,7 @@ Connect-MicrosoftGraphPS -Scopes $Scopes
 
 
 
-#### Show permissions in the current context
+#### MgGraph: Show permissions in the current context
 
 ```
 # Show Permissions in the current context
@@ -103,7 +269,7 @@ TeamMember.Read.All
 
 
 
-#### Show context of current Microsoft Graph context
+#### MgGraph: Show context of current Microsoft Graph context
 
 ```
 # Show context of current Microsoft Graph context
@@ -130,11 +296,13 @@ Environment            : Global
 
 
 
-## Get data from Microsoft Graph using 2 methods: MgGraph REST endpoint or MgGraph Cmdlets (if available)
+
+
+## MgGraph: Get data from Microsoft Graph using 2 methods: MgGraph REST endpoint or MgGraph Cmdlets (if available)
 
 
 
-#### Method 1: Invoke-MgGraphRequestPS GET with REST endpoint (supports pagination)
+#### MgGraph - Method 1: Invoke-MgGraphRequestPS GET with REST endpoint (supports pagination)
 
 ```
 $Uri        = "https://graph.microsoft.com/v1.0/devicemanagement/managedDevices"
@@ -143,7 +311,7 @@ $Devices    = Invoke-MgGraphRequestPS -Uri $Uri -Method GET -OutputType PSObject
 
 
 
-#### Method 2 (prefered): MgGraph Cmdlets (if available)
+#### MgGraph - Method 2 (prefered): MgGraph Cmdlets (if available)
 
 ```
 $Devices = Get-MgDeviceManagementManagedDevice
@@ -151,152 +319,28 @@ $Devices = Get-MgDeviceManagementManagedDevice
 
 
 
-# Pre-req script for getting environment ready with Microsoft.Graph and MicrosoftGraphPS
-
-Just copy the entire script-code below into the beginning of your script - and change the variables according to your needs as outlined below.
-
-You can also [download the script here](https://raw.githubusercontent.com/KnudsenMorten/MicrosoftGraphPS/main/Install-Update-MicrosoftGraphPS-Microsoft.Graph.ps1). 
-
-You can run the pre-req code as part of your script and it will be able to update to latest version and remove old versions, if desired.
+## REST API: Connectivity to Microsoft REST API Endpoint using MicrosoftGraphPS
 
 
 
-##### Variables
+#### REST API: Connectivity with App & Secret
 
 ```
-$Scope      = "AllUsers"  # Valid parameters: AllUsers, CurrentUser
-$AutoUpdate = $True
+$ConnectAuth = Connect-MicrosoftRestApiEndpointPS -AppId $global:HighPriv_Modern_ApplicationID_O365 `
+                                                  -AppSecret $global:HighPriv_Modern_Secret_O365 `
+                                                  -TenantId $global:AzureTenantID `
+                                                  -Uri "https://api.securitycenter.microsoft.com"                        
 ```
 
-$Scope controls where MicrosoftGraphPS PS-module is installed (AllUsers, CurrentUser)
-
-You can auto-update to latest version of MicrosoftGraphPS, if you set $AutoUpdate to $True. 
-
-If you want to control which version, you can disable AutoUpdate ($AutoUpdate = $False)
 
 
+#### Get data from REST API like Defender for Endpoint (securitycenter api)
 
-**Complete script**
-
-    ##########################################################################################
-    # Pre-req script for getting environment ready with Microsoft.Graph and MicrosoftGraphPS
-    ##########################################################################################
-    
-    <#
-    .SYNOPSIS
-    Install and Update MicrosoftGraphPS module
-    Version management of Microsoft.Graph PS modules
-    
-    .DESCRIPTION
-    
-    MicrosoftGraphPS:
-     Install latest version of MicrosoftGraphPS, if not found
-     Updates to latest version of MicrosoftGraphPS, if switch ($AutoUpdate) is set to $True
-    
-    Microsoft.Graph:
-     Installing latest version of Microsoft.Graph, if not found
-     Shows older installed versions of Microsoft.Graph
-     Checks if newer version if available from PSGallery of Microsoft.Graph
-     Automatic clean-up old versions of Microsoft.Graph
-     Update to latest version from PSGallery of Microsoft.Graph
-    
-    .AUTHOR
-    Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
-    
-    .LINK
-    https://github.com/KnudsenMorten/MicrosoftGraphPS
-    #>
-    
-    # Variables
-    $Scope      = "AllUsers"  # Valid parameters: AllUsers, CurrentUser
-    $AutoUpdate = $True
-    
-    # Check if MicrosoftGraphPS is installed
-    $ModuleCheck = Get-Module -Name MicrosoftGraphPS -ListAvailable -ErrorAction SilentlyContinue
-    
-    If (!($ModuleCheck))    # MicrosoftGraphPS is NOT installed
-        {
-            # check for NuGet package provider
-            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    
-            Write-host ""
-            Write-host "Checking Powershell PackageProvider NuGet ... Please Wait !"
-                if (Get-PackageProvider -ListAvailable -Name NuGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue) 
-                    {
-                        Write-host ""
-                        Write-Host "OK - PackageProvider NuGet is installed"
-                    } 
-                else 
-                    {
-                        try
-                            {
-                                Write-host ""
-                                Write-Host "Installing NuGet package provider .. Please Wait !"
-                                Install-PackageProvider -Name NuGet -Scope $Scope -Confirm:$false -Force
-                            }
-                        catch [Exception] {
-                            $_.message 
-                            exit
-                        }
-                    }
-    
-            Write-host "Powershell module MicrosoftGraphPS was not found !"
-            Write-Host ""
-            Write-host "Installing latest version from PsGallery in scope $Scope .... Please Wait !"
-            Write-Host ""
-    
-            Install-module -Name MicrosoftGraphPS -Repository PSGallery -Force -Scope $Scope
-            import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking -WarningAction SilentlyContinue
-        }
-            
-    Elseif ($ModuleCheck)    # MicrosoftGraphPS is installed - checking version, if it should be updated
-        {
-            # sort to get highest version, if more versions are installed
-            $ModuleCheck = Sort-Object -Descending -Property Version -InputObject $ModuleCheck
-            $ModuleCheck = $ModuleCheck[0]
-    
-            Write-host "Checking latest version of MicrosoftGraphPS module at PsGallery"
-            $online = Find-Module -Name MicrosoftGraphPS -Repository PSGallery
-    
-            #compare versions
-            if ( ([version]$online.version) -gt ([version]$ModuleCheck.version) ) 
-                {
-                    write-host ""
-                    Write-host "   Newer version ($($online.version)) detected"
-    
-                    If ($AutoUpdate -eq $true)
-                        {
-                            write-host ""
-                            Write-host "   Updating MicrosoftGraphPS module .... Please Wait !"
-                            Write-Host ""
-    
-                            Update-module -Name MicrosoftGraphPS -Force
-                            import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking -WarningAction SilentlyContinue
-                        }
-                }
-            else
-                {
-                    # No new version detected ... continuing !
-                    write-host ""
-                    Write-host "   OK - Running latest version of MicrosoftGraphPS"
-                    Write-Host ""
-    
-                    $UpdateAvailable = $False
-                    import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking -WarningAction SilentlyContinue
-                }
-        }
-    
-    ##########################################################################################
-    # Install-Update-Cleanup-Microsoft.Graph
-    ##########################################################################################
-    If ($AutoUpdate)
-        {
-            Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions -Scope $Scope
-        }
-    Else
-        {
-            Manage-Version-Microsoft.Graph -Scope $Scope
-        }
+```
+$Result = Invoke-MicrosoftRestApiRequestPS -Uri "https://api.securitycenter.microsoft.com/api/machines" `
+                                           -Method GET `
+                                           -Headers $ConnectAuth[1]
+```
 
 
 
