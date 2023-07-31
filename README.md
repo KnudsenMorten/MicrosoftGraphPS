@@ -351,6 +351,7 @@ Shows older installed versions of Microsoft.Graph
 Checks if newer version if available from PSGallery of Microsoft.Graph
 Automatic clean-up old versions of Microsoft.Graph
 Update to latest version from PSGallery of Microsoft.Graph
+Remove all versions of Microsoft.Graph
 
 .AUTHOR
 Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
@@ -359,10 +360,13 @@ Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
 https://github.com/KnudsenMorten/MicrosoftGraphPS
 
 .PARAMETER Scope
-Scope where MicrosoftGraphPS module will be installed - can be AllUsers or CurrentUser
+Scope where MicrosoftGraphPS module will be installed - can be AllUsers (default) or CurrentUser
         
 .PARAMETER CleanupOldMicrosoftGraphVersions
 [switch] Removes old versions, if any found
+
+.PARAMETER RemoveAllMicrosoftGraphVersions
+[switch] Removes all versions of Microsoft.Graph (complete re-install)
 
 .PARAMETER InstallLatestMicrosoftGraph
 [switch] Install latest version of Microsoft.Graph from PSGallery, if new version detected
@@ -387,12 +391,52 @@ Manage-Version-Microsoft.Graph -ShowVersionDetails
 # Show details of installed Microsoft.Graph and install latest (if found)
 Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph
 
+# Show details of installed Microsoft.Graph and install latest (if found)
+Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -Scope CurrentUser
+
 # Show details of installed Microsoft.Graph and clean-up old versions (if found)
 Manage-Version-Microsoft.Graph -CleanupOldMicrosoftGraphVersions
 
+# Show details of installed Microsoft.Graph and remove all versions (complete re-install)
+Manage-Version-Microsoft.Graph -RemoveAllMicrosoftGraphVersions
+
 # Show details, install latest (if found) and clean-up old versions (if found)
 Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions
+```
 
+
+
+## InstallUpdate-MicrosoftGraphPS
+
+```
+.SYNOPSIS
+Install and Update MicrosoftGraphPS module
+
+.DESCRIPTION
+Install latest version of MicrosoftGraphPS, if not found
+Updates to latest version of MicrosoftGraphPS, if switch (-AutoUpdate) is set
+
+.AUTHOR
+Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+.LINK
+https://github.com/KnudsenMorten/MicrosoftGraphPS
+
+.PARAMETER Scope
+Scope where MicrosoftGraphPS module will be installed - can be AllUsers or CurrentUser
+
+.PARAMETER AutoUpdate
+MicrosoftGraphPS module will be updated to latest version, if switch (-AutoUpdate) is set
+
+.INPUTS
+None. You cannot pipe objects
+
+.OUTPUTS
+Installation / Update status
+
+.EXAMPLE
+
+InstallUpdate-MicrosoftGraphPS -Scope AllUsers -AutoUpdate
 ```
 
 
@@ -466,6 +510,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
     Connect-MicrosoftGraphPS -Scopes $Scopes
 
 
+
 ## Invoke-MgGraphRequestPS
 
     .SYNOPSIS
@@ -506,14 +551,13 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 
 
 
-## InstallUpdate-MicrosoftGraphPS
+## Connect-MicrosoftRestApiEndpointPS
 
     .SYNOPSIS
-    Install and Update MicrosoftGraphPS module
+    Connect to REST API endpoint
     
     .DESCRIPTION
-    Install latest version of MicrosoftGraphPS, if not found
-    Updates to latest version of MicrosoftGraphPS, if switch (-AutoUpdate) is set
+    Connect to REST API endpoint like https://api.securitycenter.microsoft.com
     
     .AUTHOR
     Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
@@ -521,21 +565,69 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
     .LINK
     https://github.com/KnudsenMorten/MicrosoftGraphPS
     
-    .PARAMETER Scope
-    Scope where MicrosoftGraphPS module will be installed - can be AllUsers or CurrentUser
+    .PARAMETER Uri
+    This is the Uri for the REST endpoint in Microsoft Graph
     
-    .PARAMETER AutoUpdate
-    MicrosoftGraphPS module will be updated to latest version, if switch (-AutoUpdate) is set
+    .PARAMETER AppId
+    This is the Azure app id
+            
+    .PARAMETER AppSecret
+    This is the secret of the Azure app
+    
+    .PARAMETER TenantId
+    This is the Azure AD tenant id
     
     .INPUTS
     None. You cannot pipe objects
     
     .OUTPUTS
-    Installation / Update status
+    Connection Header & Token
     
     .EXAMPLE
-    
-    InstallUpdate-MicrosoftGraphPS -Scope AllUsers -AutoUpdate
+    $ConnectAuth = Connect-MicrosoftRestApiEndpointPS -AppId $global:HighPriv_Modern_ApplicationID_O365 `
+                                                      -AppSecret $global:HighPriv_Modern_Secret_O365 `
+                                                      -TenantId $global:AzureTenantID `
+                                                      -Uri "https://api.securitycenter.microsoft.com"
 
 
+
+## Invoke-MicrosoftRestApiRequestPS
+
+```
+.SYNOPSIS
+Invoke command to get/put/post/patch/delete data using Microsoft REST API endpoint
+
+.DESCRIPTION
+Get data using Microsoft REST API endpoint like GET https://api.securitycenter.microsoft.com/api/machines
+
+.AUTHOR
+Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+.LINK
+https://github.com/KnudsenMorten/MicrosoftGraphPS
+
+.PARAMETER Uri
+This is the Uri for the REST endpoint in Microsoft Graph
+
+.PARAMETER Method
+This is the method to handle the data (GET, PUT, DELETE, POST, PATCH)
+
+.PARAMETER Header
+This is the Header coming from Connect-MicrosoftRestApiEndpointPS
+
+.INPUTS
+None. You cannot pipe objects
+
+.OUTPUTS
+Returns the data
+
+.EXAMPLE
+$Result = Invoke-MicrosoftRestApiRequestPS -Uri "https://api.securitycenter.microsoft.com/api/machines" `
+                                           -Method GET `
+                                           -Headers $ConnectAuth[1]
+
+# Show Result
+$Result
+
+```
 
