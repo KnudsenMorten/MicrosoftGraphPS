@@ -1,7 +1,7 @@
 # MicrosoftGraphPS
 I'm really happy to announce my newest PS-module, **MicrosoftGraphPS**.
 
-Think of this PS-module as a helper for **Microsoft Graph version-management, connectivity** and **data management** using **Microsoft Graph**. It does also support **generic Microsoft REST API connectivity** and **data management** like https://api.securitycenter.microsoft.com/api/machines. More functions will be added when needed.
+Think of this PS-module as a helper for **Microsoft Graph version-management, connectivity** and **data management** using **Microsoft Graph**. It does also support **generic Microsoft REST API connectivity** and **data management** like https://api.securitycenter.microsoft.com/api/machines. 
 
 | Function                           | Funtionality                                                 |
 | ---------------------------------- | ------------------------------------------------------------ |
@@ -20,7 +20,7 @@ You can [find MicrosoftGraph here](https://raw.githubusercontent.com/KnudsenMort
 
 
 
-## Version Management
+## Version Management of MicrosoftGraphPS & Microsoft.Graph
 
 
 
