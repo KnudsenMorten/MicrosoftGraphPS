@@ -165,7 +165,15 @@ You can run the pre-req code as part of your script and it will be able to updat
 
 
 
-**Updating Microsoft Graph to latest version**
+#### Daily Automatic Update - can be used in a scheduled task
+
+```
+C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -executionpolicy bypass -file .\Install-Update-MicrosoftGraphPS-Microsoft.Graph.ps1
+```
+
+
+
+#### **Updating Microsoft Graph to latest version**
 
 ```
 # Show details, install latest (if found) and clean-up old versions (if found)
@@ -176,7 +184,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -Scope AllUsers
 
 
 
-**Clean-up older Microsoft Graph versions (except the latest available version)**
+#### **Clean-up older Microsoft Graph versions (except the latest available version)**
 
 ```
 # Show details, install latest (if found) and clean-up old versions (if found)
@@ -187,7 +195,7 @@ Manage-Version-Microsoft.Graph -CleanupOldMicrosoftGraphVersions
 
 
 
-**Remove all Microsoft Graph versions**
+#### **Remove all Microsoft Graph versions**
 
 ```
 Manage-Version-Microsoft.Graph -RemoveAllMicrosoftGraphVersions
