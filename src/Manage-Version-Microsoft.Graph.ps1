@@ -10,6 +10,7 @@ Shows older installed versions of Microsoft.Graph
 Checks if newer version if available from PSGallery of Microsoft.Graph
 Automatic clean-up old versions of Microsoft.Graph
 Update to latest version from PSGallery of Microsoft.Graph
+Remove all versions of Microsoft.Graph
 
 .AUTHOR
 Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
@@ -18,10 +19,13 @@ Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
 https://github.com/KnudsenMorten/MicrosoftGraphPS
 
 .PARAMETER Scope
-Scope where MicrosoftGraphPS module will be installed - can be AllUsers or CurrentUser
+Scope where MicrosoftGraphPS module will be installed - can be AllUsers (default) or CurrentUser
         
 .PARAMETER CleanupOldMicrosoftGraphVersions
 [switch] Removes old versions, if any found
+
+.PARAMETER RemoveAllMicrosoftGraphVersions
+[switch] Removes all versions of Microsoft.Graph (complete re-install)
 
 .PARAMETER InstallLatestMicrosoftGraph
 [switch] Install latest version of Microsoft.Graph from PSGallery, if new version detected
@@ -46,8 +50,14 @@ Manage-Version-Microsoft.Graph -ShowVersionDetails
 # Show details of installed Microsoft.Graph and install latest (if found)
 Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph
 
+# Show details of installed Microsoft.Graph and install latest (if found)
+Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -Scope CurrentUser
+
 # Show details of installed Microsoft.Graph and clean-up old versions (if found)
 Manage-Version-Microsoft.Graph -CleanupOldMicrosoftGraphVersions
+
+# Show details of installed Microsoft.Graph and remove all versions (complete re-install)
+Manage-Version-Microsoft.Graph -RemoveAllMicrosoftGraphVersions
 
 # Show details, install latest (if found) and clean-up old versions (if found)
 Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions
@@ -59,6 +69,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                 $Scope = "AllUsers",
             [Parameter()]
                 [switch]$CleanupOldMicrosoftGraphVersions = $false,
+            [Parameter()]
+                [switch]$RemoveAllMicrosoftGraphVersions = $false,
             [Parameter()]
                 [switch]$InstallLatestMicrosoftGraph = $False,
             [Parameter()]
@@ -158,13 +170,13 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 
     #-----------------------------------------------------------------------------------------
 
-    # Remove old versions of Microsoft.Graph
+    # Remove older versions of Microsoft.Graph
 
     If ( ($CleanupOldMicrosoftGraphVersions) -and ($VersionsCleanupCount -gt 0) )
         {
             ForEach ($ModuleRemove in $VersionsCleanup)
                 {
-                    Write-Host "Removing old version $($ModuleRemove.Version) of Microsoft.Graph ... Please Wait !"
+                    Write-Host "Removing older version $($ModuleRemove.Version) of Microsoft.Graph ... Please Wait !"
                     Try
                         {
                             Uninstall-module Microsoft.Graph -RequiredVersion $ModuleRemove.Version -Force
@@ -183,13 +195,23 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                         }
                 }
         }
+
+    #-----------------------------------------------------------------------------------------
+
+    # Remove all versions of Microsoft.Graph
+
+    If ($RemoveAllMicrosoftGraphVersions)
+        {
+            Write-Host "Removing all versions of Microsoft.Graph ... Please Wait !"
+            Get-module Microsoft.Graph -ListAvailable | Uninstall-module -Force
+        }
 }
 
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUV9e9AwfcCnAhWRxo7eIEJ62R
-# Q4mggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU8y/H003cqIK951CK64qz+CXn
+# YO2ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -268,16 +290,16 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# EstggKgN/rOs3he+3fr0hcw6wBYwDQYJKoZIhvcNAQEBBQAEggIAor+57dhJQagV
-# yBoD0xdCvuOCGmFT3/PKspJkd+tURj5k2SkSHLfflQuOPKKrXOZvOz7qq+pU9MP6
-# 3WqxdfZQNIiBWOy91/ShHCjABTAEbE1NkX5oyCBjvHnW+z41a0bbrtpfNzT4S1ZM
-# ANmeRL7go1ZQk6c9vDs3puiMvvgydiBbkPDrdoCtURNzosk0xvof9jPHDWJlfH4b
-# TUzoBzMzRdpbulgdYvNTjmw+Xg9+dKxZeDHLF72lElLuhpq+OodydvJF7/Mo8OyD
-# c4LZfqcQtJW13ZoR1xdKcX/loh52HxIQuyPBpCto2/rhK173xaFjTQnXm+Qew68W
-# Ooc4EyCqnULwkILC9Bw0eKdxv5a1gaN05p3orjlb2JqieD4tEbNuSodGnLvUo1Q0
-# C8cu9a4LahpncbgzcmrtGYpm1/xYsc4d/CYheOW/Sqr9KiyIIu/f9EVY83zxLpk3
-# qTxtp0MmBtE8cvjIqeSbxtF0FbkUdMgyDy0uFY0ubw/tYCONFaQBp8x2IhozyD9k
-# qL2n+7oUlChObRpXZMIuBXbV7EBen3X2LEiBXSsIBTAzzauAsmwzgMlv2MXDq87t
-# jdZr4L9D6m7F0W2xxgUiN1vb7yv5ve+7pZOLxdiGbm6kPOn5S/vgehlUzQtlGrnK
-# qV6NQ1tssX0jBDRDPAIA8BcPZThbC3A=
+# uDkIwBFb/jqFmc8Wpiz5Q8Ce0mcwDQYJKoZIhvcNAQEBBQAEggIACTdShwvHhUxD
+# VDYWScXDrFRlkY/dFNfr7AeBGyfCLFpg/bL2rEPEgg5R0ur7JHya9QeCZ2tYaag8
+# msBzEgz0MhCYR5vssaa5D1jepZ+eWnls1KoE4sOQR8zUmOooP+wEVZPbAZIaRHza
+# HrLwB1m3xIxtmGhFpZEl3/1PYGJj1oxESz2LeeqaCCQTf+fstzmoj7ChUXUZNNXP
+# j/Nkv6lBPOXbF2ZQrlE14YsJNTArWKhHPiRv1fEaSYFyULISmFIUoy0VA1pBPgbV
+# qJ7ikDEYdUIHt+zYpL0xIT7LGlvwjVarEWIjMtrNJb9attH8h31w2oTiS5t508dv
+# ViDYHF8rInyUL536bdIt6E96K2tEiK3+Xb6EpHpk2WTC41fZ+VejrLoJaDx65WRT
+# lqmEiWAHE8Bl7wOJNGpyLnhhjUSfQR7/z/g1ICFhxVSF2ifv8xoGOilzmED11xQN
+# PWTQHiOul1GqSfLdD4m0TQNkf3kVLSSmefuRCzVDzpCF7ABfTLOF6hy2Auca+YEZ
+# vgJ8RLZJa9TmJlih96WP4kr77vgYWuw7LlcMBClEkmvpD0LOhpw2yeqJbZlbzsMQ
+# SN05PzkiTFJyWJ0QuwWlK++xQTuVHYZN5pz8z1Lpd4W7AQR0xe9GkFZcnH3IqY5v
+# IrftBVTrtp+Q2tL/NdQeQjIUz2jKD9Q=
 # SIG # End signature block

@@ -174,7 +174,7 @@ Else
 
 
 
-**Updating Microsoft.Graph to latest version**
+**Updating Microsoft Graph to latest version**
 
 ```
 # Show details, install latest (if found) and clean-up old versions (if found)
@@ -185,7 +185,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -Scope AllUsers
 
 
 
-**Clean-up older Microsoft.Graph versions (except the latest available version)**
+**Clean-up older Microsoft Graph versions (except the latest available version)**
 
 ```
 # Show details, install latest (if found) and clean-up old versions (if found)
@@ -196,7 +196,7 @@ Manage-Version-Microsoft.Graph -CleanupOldMicrosoftGraphVersions
 
 
 
-**Remove all Microsoft.Graph versions**
+**Remove all Microsoft Graph versions**
 
 ```
 Manage-Version-Microsoft.Graph -RemoveAllMicrosoftGraphVersions
