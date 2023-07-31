@@ -634,17 +634,17 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 
     #-----------------------------------------------------------------------------------------
         Write-host ""
-        Write-Host "Checking if you are running latest version of Microsoft.Graph from PSGallery"
+        Write-Host "Checking if you are running latest version of Microsoft.Graph from PSGallery ... Please Wait !"
 
-        $InstalledVersions = Get-module Microsoft.Graph -ListAvailable
-        $InstalledVersionsCount = ($InstalledVersions | Measure-Object).count
+        $InstalledVersions = Get-module Microsoft.Graph* -ListAvailable | Where-Object { ($_.ModuleType -eq "Manifest") -or ($_.ModuleType -eq "Script") }
+        $InstalledVersionsCount = ( ($InstalledVersions | Group-Object -Property Version) | Measure-Object).count
         $LatestVersion = $InstalledVersions | Sort-Object Version -Descending | Select-Object -First 1
 
         If ($ShowVersionDetails)
             {
                 Write-host ""
                 Write-Host "   Installed versions of Microsoft.Graph are [ $($InstalledVersionsCount) ]"
-                $InstalledVersions | Select-Object Name, Version | ft
+                $InstalledVersions | Group-Object -Property Version
             }
 
         # Checking latest version in PSGallery
@@ -672,7 +672,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
         Write-Host "Checking if you have any older versions of Microsoft.Graph installed that may conflict and should be removed"
 
         $VersionsCleanup = $InstalledVersions | Where-Object { [version]$_.Version -lt [version]$Online.Version }
-        $VersionsCleanupCount = ($VersionsCleanup | Measure-Object).count
+        $VersionsCleanupCount = ( ($VersionsCleanup | Group-Object -Property Version) | Measure-Object).count
 
         If ($VersionsCleanupCount -gt 0)
             {
@@ -714,10 +714,11 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
         {
             ForEach ($ModuleRemove in $VersionsCleanup)
                 {
-                    Write-Host "Removing older version $($ModuleRemove.Version) of Microsoft.Graph ... Please Wait !"
+                    Write-host ""
+                    Write-Host "Removing older version $($ModuleRemove.Version) of $($ModuleRemove.Name) ... Please Wait !"
                     Try
                         {
-                            Uninstall-module Microsoft.Graph -RequiredVersion $ModuleRemove.Version -Force
+                            Uninstall-module -Name $ModuleRemove.Name -RequiredVersion $ModuleRemove.Version -Force -ErrorAction SilentlyContinue
                         }
                     Catch
                         {
@@ -741,7 +742,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
     If ($RemoveAllMicrosoftGraphVersions)
         {
             Write-Host "Removing all versions of Microsoft.Graph ... Please Wait !"
-            Get-module Microsoft.Graph -ListAvailable | Uninstall-module -Force
+            Get-module Microsoft.Graph* -ListAvailable | Uninstall-module -Force
         }
 }
 
@@ -750,8 +751,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBeuml+7bBQYmKk
-# ShQOoHFmxCfdpzJNeZaxi7eTba9TKaCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDo/o0GXXXxYN/E
+# dbz4U/cQOx3L1sfUCvo9122Q9TBB1KCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -859,17 +860,17 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIIX2QNv2BVKJ4DkFFJXmAzNh
-# 9Pc5ICEO3614ZISDp+hMMA0GCSqGSIb3DQEBAQUABIICAFuGb3XRQXegvN9aQPme
-# xLNCxcYc/gqkx47Ta5vOzU44PktKrIbmrcSQfQ6SyUYtUr0AtAUu99uRhwIIEZME
-# CpHX49XNIwE3fK8Squ7H73SvOdAQ2TP+cGNd5MdE1pQQ6EOTJWHCiHzzdvpmrTYj
-# m6BoWfWHmeboFQkG3reFeUb2ez0LoJkRpE4tRgK1ZEntcOyRkISq5dSruztFgc/y
-# BKaWUgWAv4Mg7/l1vl6JAJP2wwkQE/PkqCYghl7z/H7PUKbGBGgTfGvmhqVfc7E2
-# hbr3RPWU7WUitc04/mhATjOik/pxJTHOi2FmjrSzvnPat93xC8qXqjzAbqFOfv3a
-# /OLW8q6maZ+QBRLFcmcZZRLY00ScnlCf9cDjUOiDfY2x3ZR3ActOgJ12og3ExfXh
-# V7HKdIZzP//0I7w0aS16lEIzQBLc3G73vgCdOd/BGcbQlsnNfzdSjXpB09VxQQQd
-# XggpbfSfcUvxkiZRtQ79lFhiH43tJsHTWzaAneoZUihvXHM1cH0ekbkoBUNvwVfs
-# WRhR0dJGsqpwmwQeyjCoAqTq+EX/dfl9H68WO8Daxp9cadFzl0bjAuG34wpWtrf0
-# VPIvH+xAaoly5IftKpH2QTjVTrxZ3ZXU2VYU6m30c0b/iLFx6SGMRS+BbyJDvRwP
-# zrQ6hHRdS7gTyGLpZtFFfjNM
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEINwTyB0T0ypE0fF2/tCtc23U
+# gqgQE+s0BBqUoFtQE2LVMA0GCSqGSIb3DQEBAQUABIICAKQvXHxeeftQSyWlV5wi
+# J+RDU9t7tjKCRZ75oCF/QnDWCLIcHEsBahPm9uKp5pZ5v2DJ1i2ApIzrkKSfyYKj
+# 8Ozmqx2tEhXK6+N+pUF+XRWEJCRbyaAeJBQ9JM2lc6vx5pd7kSZHlkuhJXw54Kpv
+# 1g/DH58Uck1ZMcoDBwkDxUMYzKMFTaR3ThSafIV8I5DEsAHNIfrdHcJ7TCrnLFrF
+# SW7UPytuCQ56TKgLp9uJJoRoNmC9zAjZjp5KPnE+Zy7drTyRDfLcKuPXTtnuA7tg
+# oEDzqnwnDrmWgwpapQtv7dwOL6aKjDccscSErx5K3en5dvsiwt7J2/yPwfwVHIoO
+# Gr+WXD1WxjArnclxAG8nZtWUlJ7rkR3Eq4Fem1CLB6leL6gU2P3O/CeFCa/R97gx
+# kqvBBx1Sm4RpCW5+tAcHvagrD5CFw6pbGoBxznAjSAxipkgm6mypxgzta2/UIfAV
+# 4bIULOjydikhfubUuVmr/zzrKjzgAkNC7EA/v0JANuUCGVMCz0OxerBfxCojitq2
+# lOm4hHjJ6JanaVb5MmSI/WoeeSKLql5FW+07LktdxYnbSgk/4+vvTMOS9DP8b8cS
+# 4YRn0dmCkP+23sAQG1zsEKTwj4pnyzZK/YiYdbtOA8EFjfvy/l/qzz5/8MfF+t++
+# qRmMMiPV8WF3wJiSUKdpGAuO
 # SIG # End signature block
