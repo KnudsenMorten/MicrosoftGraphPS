@@ -28,25 +28,6 @@ You can [find MicrosoftGraph here](https://raw.githubusercontent.com/KnudsenMort
 
 Just copy the entire script-code below into the beginning of your script - and change the variables according to your needs as outlined below.
 
-You can also [download the script here](https://raw.githubusercontent.com/KnudsenMorten/MicrosoftGraphPS/main/Install-Update-MicrosoftGraphPS-Microsoft.Graph.ps1). 
-
-You can run the pre-req code as part of your script and it will be able to update to latest version and remove old versions, if desired.
-
-
-
-##### Variables
-
-```
-$Scope      = "AllUsers"  # Valid parameters: AllUsers, CurrentUser
-$AutoUpdate = $True
-```
-
-$Scope controls where MicrosoftGraphPS PS-module is installed (AllUsers, CurrentUser)
-
-You can auto-update to latest version of MicrosoftGraphPS, if you set $AutoUpdate to $True. 
-
-If you want to control which version, you can disable AutoUpdate ($AutoUpdate = $False)
-
 
 
 <details>
@@ -175,6 +156,12 @@ Else
 ```
 
 </details>
+
+
+
+You can also [download the script here](https://raw.githubusercontent.com/KnudsenMorten/MicrosoftGraphPS/main/Install-Update-MicrosoftGraphPS-Microsoft.Graph.ps1). 
+
+You can run the pre-req code as part of your script and it will be able to update to latest version and remove old versions, if desired.
 
 
 
