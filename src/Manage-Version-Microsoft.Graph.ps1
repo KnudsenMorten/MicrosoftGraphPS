@@ -174,9 +174,9 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 
     If ( ($CleanupOldMicrosoftGraphVersions) -and ($VersionsCleanupCount -gt 0) )
         {
+            Write-host ""
             ForEach ($ModuleRemove in $VersionsCleanup)
                 {
-                    Write-host ""
                     Write-Host "Removing older version $($ModuleRemove.Version) of $($ModuleRemove.Name) ... Please Wait !"
                     Try
                         {
@@ -211,8 +211,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUwPVbxtQ3T5okkfsu8hjyD8qX
-# B+Kggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU5vNV6keoKxbvXmNdToXuKG1S
+# KGKggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -291,16 +291,16 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# AG/2d1cFMSXQAWqXRXy4aWSnKgowDQYJKoZIhvcNAQEBBQAEggIAnxfU+EYW6K1Y
-# qO8Mh0zPah5kmyXB5vk4eogj9VRMJpKLcBDnzVOR29uF+XKW0o7vmsxM70Xw626G
-# 9byP7jdmFESsN+uzubtwB0uVkn5t2T0154v5376wppL8KEDhejk7HoFSS9YMDNhK
-# G3EIM+sszKDZ1ODixvbiA4kwNVhQRxME9yjKtyCiTQH8kLDHWj5gsi+AtaPsrd1K
-# aQ5pNJXe0SFaEnQ3PTZEnb/m63kSN6D9Y1wyX8rt9SiTP1lMNrhw4Qg56JK54OJG
-# vUywUUB1RIehxt7Od9oFMYFWABMozbuQ/BBU7J20g3/cD2uyqzUpoxN0+12FBoya
-# qjY669ZlZ/1FS+wT4apEJsNRraL3WkJyOdZp21LZv8tyktOxrDitO84jbRE+HgBo
-# +8eMaujBVsutdVcz6yheL+3+TD6cpjND5YMyw463W4iPMGKxdAWea7pmsDpARKdP
-# ARGhmxEkps7s9zjuQr4F8+nmAA51J5Jv2m1bhrcvZqlCt3PuPrdxgtSlEcF2FGaq
-# XQvBu1rVaKjTr78bAk7U2T0Z+hmf5R8Yw1w8bjc5ammRwo31yNZhiqogjbVJ8RPZ
-# Ny5IXWxkc49HtcPNgbhDdCYaQ1G++XOHM2j0F+qOKekT61VJaVmXkte92Ohu7A5+
-# bbXaM1arHK45lVYNYL2aOWZWuK/7NFQ=
+# seDRzZ9GoAbQcRsDlg0ddq7iFVowDQYJKoZIhvcNAQEBBQAEggIARE5zHzr+IYXh
+# B3dQh/oe86YPwCnicoX17pyJ9zA3Nt3DcuUwnaebe0JhpH2nBOG46UXcf8Fje2pc
+# 6izuDS5okAJ3vdiJSKj4BP7jSzykc3doWXOFuBEhpdrEkikEql51i7mprK98dcSQ
+# wCgf7Rj/visanLj3MCeqQkuDg7rt7CK+I5d2Y+K0zBl+9JogkYCgsQPKi+pa9Iku
+# Kt4xKMCjURsDzy9fZObKz4MW2UyvLvAZlyMuOfjRMUMT1vhWzVSxCGr4lmYUP2eg
+# DT1wqoe+P4LXveIt7ATC0wfqNT4+34leQoCWxrhgd3LRQotNAXpbcpjqB1jGHBiK
+# jjwSeaxI7moHCCkKFcqjLv4YjM5NdeKQf2p/B/iW12tBJr99C5sNMChzqrn9bQt0
+# xTd2rSmt5mldiCcsvVxbuNDBgZGBazkmp06vnuabVchz996bcuQncxqif/etZgp1
+# 6gQkuhBiv31dvVVWy33EyM2DsIh+pmAkbvP6t+oZ7lZMPLN0bEEmK6xmJGM7mYRC
+# /LC4dtmrCR07xwcQcuews04VkneudKQbuy0H4zK3glK//c4h3EH0Euy+OpGpfiqK
+# 77N0ocSjZ98/07FrbGr/hlw+cSLGwzEaWXzyQNe2Un6ACNMHgA4eGV+85k/vHil6
+# 1FbNw1Z6JRUYhVhJZVgYB7kgEN2GH0U=
 # SIG # End signature block
