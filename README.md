@@ -325,6 +325,10 @@ $ConnectAuth = Connect-MicrosoftRestApiEndpointPS -AppId $global:HighPriv_Modern
 
 
 
+## REST API: Get data from REST API using MicrosoftGraphPS
+
+
+
 #### Get data from REST API like Defender for Endpoint (securitycenter api)
 
 ```
