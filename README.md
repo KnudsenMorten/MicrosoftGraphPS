@@ -3,7 +3,7 @@ I'm really happy to announce my newest PS-module, **MicrosoftGraphPS**.
 
 Think of this PS-module as a helper for **Microsoft Graph version-management, connectivity** and **data management** using **Microsoft Graph**. It does also support **generic Microsoft REST API connectivity** and **data management** like https://api.securitycenter.microsoft.com/api/machines. 
 
-| Function                           | Funtionality                                                 |
+| Function Name                      | Funtionality                                                 |
 | ---------------------------------- | ------------------------------------------------------------ |
 | Manage-Version-Microsoft.Graph     | Version management of Microsoft.Graph PS modules<br/>Installing latest version of Microsoft.Graph, if not found<br/>Shows older installed versions of Microsoft.Graph<br/>Checks if newer version if available from PSGallery of Microsoft.Graph<br/>Automatic clean-up old versions of Microsoft.Graph<br/>Update to latest version from PSGallery of Microsoft.Graph<br/>Remove all versions of Microsoft.Graph (complete re-install) |
 | InstallUpdate-MicrosoftGraphPS     | Install latest version of MicrosoftGraphPS, if not found<br/>Update to latest version of MicrosoftGraphPS, if switch (-AutoUpdate) is set |
