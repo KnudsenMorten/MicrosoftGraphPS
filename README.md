@@ -49,6 +49,9 @@ If you want to control which version, you can disable AutoUpdate ($AutoUpdate = 
 
 
 
+<details>
+  <summary><h4>Complete Script / Powershell code</h4></summary>
+
 ```
 ##########################################################################################
 # Pre-req script for getting environment ready with Microsoft.Graph and MicrosoftGraphPS
@@ -169,8 +172,9 @@ Else
     {
         Manage-Version-Microsoft.Graph -Scope $Scope
     }
-
 ```
+
+</details>
 
 
 
