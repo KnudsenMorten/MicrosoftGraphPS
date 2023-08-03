@@ -203,16 +203,53 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 
     If ($RemoveAllMicrosoftGraphVersions)
         {
-            Write-Host "Removing all versions of Microsoft.Graph ... Please Wait !"
-            Get-module Microsoft.Graph* -ListAvailable | Uninstall-module -Force
+            # Starting other Powershell session with no profile loaded
+
+            Write-Host "Removing all versions of main module of Microsoft.Graph ... Please Wait !"
+            Remove-Module Microsoft.Graph -Force -ErrorAction SilentlyContinue
+            Uninstall-Module Microsoft.Graph -AllVersions -Force -ErrorAction SilentlyContinue
+
+
+            # Remove all dependency modules from memory + uninstall
+            $Retry = 0
+            Do
+                {
+                    $Retry = 1 + $Retry
+
+                    $LoadedModules = Get-InstalledModule Microsoft.Graph.* -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne 'Microsoft.Graph.Authentication' }
+
+                    # Modules found
+                    If ($LoadedModules)
+                        {
+                            ForEach ($Module in $LoadedModules)
+                                {
+                                    Write-Host "Removing module $($Module.Name) ... Please Wait !"
+                                    Remove-Module -Name $Module.Name -force -ErrorAction SilentlyContinue
+                                    Uninstall-Module -Name $Module.Name -force -ErrorAction SilentlyContinue
+                                }
+
+
+                            $LoadedModules = Get-InstalledModule Microsoft.Graph.Authentication
+                            ForEach ($Module in $LoadedModules)
+                                {
+                                    Write-Host "Removing module $($Module.Name) ... Please Wait !"
+                                    Remove-Module -Name $Module.Name -force -ErrorAction SilentlyContinue
+                                    Uninstall-Module -Name $Module.Name -force -ErrorAction SilentlyContinue
+                                }
+                        }
+
+                    # Verifying if all modules have been removed
+                    $InstalledModules = Get-InstalledModule Microsoft.Graph.* -ErrorAction SilentlyContinue
+                }
+            Until ( ($LoadedModules -eq $null) -or ($Retry -eq 5) )
         }
 }
 
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU5vNV6keoKxbvXmNdToXuKG1S
-# KGKggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUvquEFkz3+CZfAnITPGQNIdzl
+# zHaggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -291,16 +328,16 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# seDRzZ9GoAbQcRsDlg0ddq7iFVowDQYJKoZIhvcNAQEBBQAEggIARE5zHzr+IYXh
-# B3dQh/oe86YPwCnicoX17pyJ9zA3Nt3DcuUwnaebe0JhpH2nBOG46UXcf8Fje2pc
-# 6izuDS5okAJ3vdiJSKj4BP7jSzykc3doWXOFuBEhpdrEkikEql51i7mprK98dcSQ
-# wCgf7Rj/visanLj3MCeqQkuDg7rt7CK+I5d2Y+K0zBl+9JogkYCgsQPKi+pa9Iku
-# Kt4xKMCjURsDzy9fZObKz4MW2UyvLvAZlyMuOfjRMUMT1vhWzVSxCGr4lmYUP2eg
-# DT1wqoe+P4LXveIt7ATC0wfqNT4+34leQoCWxrhgd3LRQotNAXpbcpjqB1jGHBiK
-# jjwSeaxI7moHCCkKFcqjLv4YjM5NdeKQf2p/B/iW12tBJr99C5sNMChzqrn9bQt0
-# xTd2rSmt5mldiCcsvVxbuNDBgZGBazkmp06vnuabVchz996bcuQncxqif/etZgp1
-# 6gQkuhBiv31dvVVWy33EyM2DsIh+pmAkbvP6t+oZ7lZMPLN0bEEmK6xmJGM7mYRC
-# /LC4dtmrCR07xwcQcuews04VkneudKQbuy0H4zK3glK//c4h3EH0Euy+OpGpfiqK
-# 77N0ocSjZ98/07FrbGr/hlw+cSLGwzEaWXzyQNe2Un6ACNMHgA4eGV+85k/vHil6
-# 1FbNw1Z6JRUYhVhJZVgYB7kgEN2GH0U=
+# HlO8PydoGzbTFhOEM6EWGIiiRXgwDQYJKoZIhvcNAQEBBQAEggIAOGa6DgC1fLXg
+# TSmzJcmb7YBF1hjFYMy/vHM5O4Mysm6lVnJAVw8Mf/DK9iKz3aNWdDJtlSrkhx1l
+# KrQb/Dh9KQGuIryvs892UmlTjljOqTfA9HNdO4iEV00/04j9kidYHnmgbS0vECQS
+# TG1mZHgdK/mF9VgQ81J6/Ayr3FtlXce+pqS8MvT/XQ9as7z31LpcaHkMWnQ4YT9m
+# 33wMvNwxiE6DBQD5b6W/kDVNROXbGsvc7yX+HnquMEhGIU7ibNK9qp84BIG2047l
+# OwJ8Fv1FRS90WJ2L2AgGvAZkXxKkf252kj/da4zrUYZ3NnGphvAlkK3BTz4bqYaL
+# GtIqqNFLwYTRrNgDWv8HwJtR8tN/ukUBybJ3j36p9phUcLVQ61C4FbIQfVu8FfwN
+# BQKhd9l5j/ajsHh7UYjxt97WUlFT+PEbdu0+OISDN9+XxtZ+nZoBWWNKn64p4Nbp
+# 20JSBX0wdhEG/h21k7JX8+ScAPe/7SxMKv4YaB5mAETEhpCmufkasKVEGjKnMC0j
+# kOLnjLeWJLFXrY8+yJlu4p323E8Ao0ntZCaMCNYvA3c9mh3kgZNP15Lt0qa6Vy3C
+# ThXbasNOORl9C6Io3nJeX58AiXhcijKBb+qgwukMPPea1/qnRXvWSaBHmZX2OJrk
+# ODbynWNARteeh529COb5LLRciCN0ynY=
 # SIG # End signature block

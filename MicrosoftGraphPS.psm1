@@ -216,6 +216,102 @@ param(
 }
 
 
+Function Get-MgUser-AllProperties-AllUsers
+{
+<#
+
+.SYNOPSIS
+Performs a Get-MgUser for all users retrieving all properties (except for certain properties which cannot be returned within a user collection). 
+Manager property is being expanded
+
+.DESCRIPTION
+Get all properties for all users
+Expands manager information
+Excludes certain properties which cannot be returned within a user collection in bulk retrieval (*)
+
+(*)
+https://learn.microsoft.com/en-us/graph/api/user-list?view=graph-rest-1.0&tabs=http#optional-query-parameters
+
+The following properties are only supported when retrieving a single user: aboutMe, birthday, hireDate, interests, mySite, pastProjects, preferredName, 
+responsibilities, schools, skills, mailboxSettings, DeviceEnrollmentLimit, print, SignInActivity
+
+
+.AUTHOR
+Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+.LINK
+https://github.com/KnudsenMorten/MicrosoftGraphPS
+
+.INPUTS
+None. You cannot pipe objects
+
+.OUTPUTS
+Returns the data
+
+.EXAMPLE
+
+$Result = Get-MgUser-AllProperties-AllUsers
+$Result | fl
+
+$Result.ManagerProperties | fl
+
+#>
+    [CmdletBinding()]
+    param(
+            [Parameter()]
+                [switch]$All,
+            [Parameter()]
+                [string]$UserId
+         )
+
+    # Building list of Properties from first user found in Entra ID (prior named Azure AD)
+        $PropertiesRaw = Get-MgUser -Top 1 | Get-Member -MemberType Property | select -ExpandProperty Name
+
+    <#
+        $BulkPropertyExclude
+        Certain properties cannot be returned within a user collection. 
+        https://learn.microsoft.com/en-us/graph/api/user-list?view=graph-rest-1.0&tabs=http#optional-query-parameters
+
+        The following properties are only supported when retrieving a single user: aboutMe, birthday, hireDate, interests, mySite, pastProjects, preferredName, 
+        responsibilities, schools, skills, mailboxSettings.
+
+        The following properties are not supported in personal Microsoft accounts and will be null: aboutMe, birthday, interests, mySite, pastProjects, preferredName, 
+        responsibilities, schools, skills, streetAddress.
+    #>
+
+        $PropertyExclude = @("MailboxSettings",`
+                             "DeviceEnrollmentLimit",`
+                             "SignInActivity",`
+                             "Print",`
+                             "AboutMe",`
+                             "Birthday",`
+                             "HireDate",`
+                             "Interests",`
+                             "MySite",`
+                             "PastProjects",`
+                             "PreferredName",`
+                             "Responsibilities",`
+                             "Schools",`
+                             "Skills"
+                            )
+
+    # Removing special properties from bulk-retrieval
+        $Properties = $PropertiesRaw | Where-Object { ($_ -notin $PropertyExclude) }
+
+    # Building array of properties to expand
+        $PropertiesExpand = @("Manager")
+
+    # Getting all data about users
+        Write-Host "Getting all properties from all users in Entra ID (prior named Azure AD) .... Please Wait !"
+        $EntraID_Users_ALL = Get-MgUser -All -Property $Properties -ExpandProperty $PropertiesExpand | Select-Object $Properties | `
+                             Select *,@{Name = 'ManagerDisplayName'; Expression = {$_.Manager.AdditionalProperties.displayName}}, `
+                                      @{Name = 'ManagerMail'; Expression = {$_.Manager.AdditionalProperties.mail}},`
+                                      @{Name = 'ManagerProperties'; Expression = {$_.Manager.AdditionalProperties}}
+        
+        Return $EntraID_Users_ALL
+}
+
+
 Function InstallUpdate-MicrosoftGraphPS
 {
 <#
@@ -741,8 +837,45 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 
     If ($RemoveAllMicrosoftGraphVersions)
         {
-            Write-Host "Removing all versions of Microsoft.Graph ... Please Wait !"
-            Get-module Microsoft.Graph* -ListAvailable | Uninstall-module -Force
+            # Starting other Powershell session with no profile loaded
+
+            Write-Host "Removing all versions of main module of Microsoft.Graph ... Please Wait !"
+            Remove-Module Microsoft.Graph -Force -ErrorAction SilentlyContinue
+            Uninstall-Module Microsoft.Graph -AllVersions -Force -ErrorAction SilentlyContinue
+
+
+            # Remove all dependency modules from memory + uninstall
+            $Retry = 0
+            Do
+                {
+                    $Retry = 1 + $Retry
+
+                    $LoadedModules = Get-InstalledModule Microsoft.Graph.* -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne 'Microsoft.Graph.Authentication' }
+
+                    # Modules found
+                    If ($LoadedModules)
+                        {
+                            ForEach ($Module in $LoadedModules)
+                                {
+                                    Write-Host "Removing module $($Module.Name) ... Please Wait !"
+                                    Remove-Module -Name $Module.Name -force -ErrorAction SilentlyContinue
+                                    Uninstall-Module -Name $Module.Name -force -ErrorAction SilentlyContinue
+                                }
+
+
+                            $LoadedModules = Get-InstalledModule Microsoft.Graph.Authentication
+                            ForEach ($Module in $LoadedModules)
+                                {
+                                    Write-Host "Removing module $($Module.Name) ... Please Wait !"
+                                    Remove-Module -Name $Module.Name -force -ErrorAction SilentlyContinue
+                                    Uninstall-Module -Name $Module.Name -force -ErrorAction SilentlyContinue
+                                }
+                        }
+
+                    # Verifying if all modules have been removed
+                    $InstalledModules = Get-InstalledModule Microsoft.Graph.* -ErrorAction SilentlyContinue
+                }
+            Until ( ($LoadedModules -eq $null) -or ($Retry -eq 5) )
         }
 }
 
@@ -751,8 +884,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDoG4+IudVVSzZW
-# U0LZSNPojeaKsmxbcvgkm+Xyk/lOyKCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDwGDsnAEKPIl5J
+# zhXsi9N15b4FVR7MUXUUUc4iVpAb1KCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -860,17 +993,17 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIDZ/EJ3VqXzMfcsosyEF9jjG
-# k/JXP0kuU/On66UGR+fRMA0GCSqGSIb3DQEBAQUABIICAJtTTSc/mnFwhMxW5EEa
-# 0EObwDLjs+PCvJNQJUETWhUtcQxCgOIQXrwDVKUadO/AFBdhcVF1f0hon12/kw0q
-# +ErXIHNYWI7U2wUMJNlY+946T7fs0cfah+DO2ZvYpFMXDG/QqlZFw13z3J+VjFDD
-# ELZxvS5sD6qTgRLgSLvEId4G3VCTMM+m7XOQ9n6z9pAtLNzOISaxt6wdt2LS/cmA
-# paCW2n8s8/HBIEIN/A8NV5mCY99y29G2HYCURZfVDIaAM854qOEhc1KCsY2NpiOI
-# ZO9TIHXmjZ5peT1njkGgwG9/CIGreVsq2mEWOzhx+va6oGM8MkkC5WRvY9Q0jX/A
-# NrWUmOny3By09IHWEef8d+uZctgt79AB9nvxFuUf5eT+45gvzLmPX+El7hy8qAmI
-# mHVaIOJR+s7nQ5InWdrYkcrP61knEwq3Ltfv7CLqfktuEEGFpiWSHgIPMJQ+ZNvG
-# 2/J+nE+d4qb7+6urlmqBcHv4KDGnVJo2Pb7QEKwx/qyJT3YdczLJOpj7QUcoQ5pt
-# rXRZTb0B5JL2hwMWAcJarR0X0XH086TuQTDKwjHL0+29GMPalTV3BkT1+jPbNyK6
-# cvDXhWCuXUhLk5DUZfPOWM+yoIxCZSNYY+g+kUjplOymhsTPxQuxnt5nvsn1aHT0
-# R7A5o3sjYPO4W+P6GeDJAACg
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEINWZ+t081z8ElB2LY56QGMT8
+# dJe/bEP1h/ds1tBJmh/LMA0GCSqGSIb3DQEBAQUABIICAF8fO6PTyG7+dDYiWSDg
+# 40hgjMXluhwU053X0cd3r4LVdIoO2g5f+Hj4Hgh003Tp0+WhDXM9RacmXU7S2OM0
+# Xya2z5XCP0OsBK7RluQBtaq8af20nnz62Az3ViQIKd2nintpHd4WJWsfU77/dBs+
+# iycLrNgTIoXtVBepX1khXatj48moyceJaBXF2hbgWZCJ+2ma0vOs9uEKxuYlfZPw
+# TSCsvMvvqr94rcSBBffyfxoxi/GF4X3cVBNEFGdi9VvUEi8szg2agNx1NFX6Vo84
+# fl6aViwXxcW1wiBJ7eVazAQQup5seeVfyvPeizwT1CTujnQEOIINuan2m2zeXffW
+# 1aD0xnugW/fbMPo3gmYQ9HeHPsXI/zZzJscnjZVgQoZd8D2x7Q/7H4HTAbikM/IZ
+# 8Nhox2wr3IkD2ggURHaFof1J1yEJ6a+ThEjQjlh9edMNLYR8Y/awJ/fJ9Peh2Idh
+# AAcruMR/7uo/tUor9QJzE4/PzTx1I7362evoabKvEjoTkCtwhGTrXDDLteSW6sPY
+# 6E3ivdNaoh2VF9wtEF4PPF36SKtJrAholKoI2Q7vwQVEIg6vQjTdc+CmcduEqw46
+# khIpPP7oRoO1YKrBa+nGBsTghQ6GJcbPazf5S04dNyh921rsFlxQhkPquXH81Vwz
+# sIPe0PtEayRxVkxjlkOAf07K
 # SIG # End signature block
