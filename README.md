@@ -11,6 +11,7 @@ Think of this PS-module as a helper for **Microsoft Graph version-management, co
 | Invoke-MgGraphRequestPS            | Invoke command with pagination support to get/put/post/patch/delete data using Microsoft Graph REST endpoint. |
 | Connect-MicrosoftRestApiEndpointPS | Connect to REST API endpoint like https://api.securitycenter.microsoft.com using Azure App & Secret |
 | Invoke-MicrosoftRestApiRequestPS   | Invoke command to get/put/post/patch/delete data using Microsoft REST API endpoint<br/>Get data using Microsoft REST API endpoint like <br/>https://api.securitycenter.microsoft.com/api/machines |
+| Get-MgUser-AllProperties-AllUsers  | Get all properties for all users<br/>Expands manager information<br/>Excludes certain properties which cannot be returned within a user collection in bulk retrieval<br/><br/>The following properties are only supported when retrieving a single user: aboutMe, birthday, hireDate, interests, mySite, pastProjects, preferredName, <br/>responsibilities, schools, skills, mailboxSettings, DeviceEnrollmentLimit, print, SignInActivity |
 
 
 
@@ -347,6 +348,25 @@ Invoke-MicrosoftRestApiRequestPS -Uri "https://api.securitycenter.microsoft.com/
 
 
 
+## Get-MgUser-AllProperties-AllUsers
+
+Get all properties for all users
+Expands manager information
+Excludes certain properties which cannot be returned within a user collection in bulk retrieval (*)
+
+(*)
+https://learn.microsoft.com/en-us/graph/api/user-list?view=graph-rest-1.0&tabs=http#optional-query-parameters
+
+The following properties are only supported when retrieving a single user: aboutMe, birthday, hireDate, interests, mySite, pastProjects, preferredName, 
+responsibilities, schools, skills, mailboxSettings, DeviceEnrollmentLimit, print, SignInActivity
+
+```
+$Result = Get-MgUser-AllProperties-AllUsers
+$Result | fl
+```
+
+
+
 # **Synopsis for functions**
 
 
@@ -641,5 +661,45 @@ $Result = Invoke-MicrosoftRestApiRequestPS -Uri "https://api.securitycenter.micr
 # Show Result
 $Result
 
+```
+
+
+
+## Get-MgUser-AllProperties-AllUsers
+
+```
+.SYNOPSIS
+Performs a Get-MgUser for all users retrieving all properties (except for certain properties which cannot be returned within a user collection). 
+Manager property is being expanded
+
+.DESCRIPTION
+Get all properties for all users
+Expands manager information
+Excludes certain properties which cannot be returned within a user collection in bulk retrieval (*)
+
+(*)
+https://learn.microsoft.com/en-us/graph/api/user-list?view=graph-rest-1.0&tabs=http#optional-query-parameters
+
+The following properties are only supported when retrieving a single user: aboutMe, birthday, hireDate, interests, mySite, pastProjects, preferredName, 
+responsibilities, schools, skills, mailboxSettings, DeviceEnrollmentLimit, print, SignInActivity
+
+.AUTHOR
+Morten Knudsen, Microsoft MVP - https://mortenknudsen.net
+
+.LINK
+https://github.com/KnudsenMorten/MicrosoftGraphPS
+
+.INPUTS
+None. You cannot pipe objects
+
+.OUTPUTS
+Returns the data
+
+.EXAMPLE
+
+$Result = Get-MgUser-AllProperties-AllUsers
+$Result | fl
+
+$Result.ManagerProperties | fl
 ```
 
