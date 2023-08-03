@@ -1,7 +1,7 @@
 # MicrosoftGraphPS
 I'm really happy to announce my newest PS-module, **MicrosoftGraphPS**.
 
-Think of this PS-module as a helper for **Microsoft Graph version-management, connectivity** and **data management** using **Microsoft Graph**. It does also support **generic Microsoft REST API connectivity** and **data management** like https://api.securitycenter.microsoft.com/api/machines. 
+Think of this PS-module as a helper for **Microsoft Graph version-management, connectivity** and **data management** using **Microsoft Graph**. It does also support **generic Microsoft REST API connectivity** and **data management** like https://api.securitycenter.microsoft.com/api/machines. Lastly, it includes new custom cmdlets I use often like Get-MgUser-AllProperties-AllUsers
 
 | Function Name                      | Funtionality                                                 |
 | ---------------------------------- | ------------------------------------------------------------ |
@@ -363,6 +363,8 @@ responsibilities, schools, skills, mailboxSettings, DeviceEnrollmentLimit, print
 ```
 $Result = Get-MgUser-AllProperties-AllUsers
 $Result | fl
+
+Getting all properties from all users in Entra ID (prior named Azure AD) .... Please Wait !
 ```
 
 
