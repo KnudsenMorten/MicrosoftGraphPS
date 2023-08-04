@@ -632,7 +632,6 @@ Function Invoke-MicrosoftRestApiRequestPS
 }
 
 
-
 Function Manage-Version-Microsoft.Graph
 {
 <#
@@ -742,8 +741,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                                     Uninstall-Module -Name $Module.Name -force -ErrorAction SilentlyContinue
 
                                     # Sometimes uninstall-module doesn't clean-up correctly. This will ensure complete deletion of leftovers !
-                                    $ModulePath = (get-item $Module.Path).DirectoryName
-                                    if (Test-Path $modulePath) 
+                                    $ModulePath = (get-item $Module.Path -ErrorAction SilentlyContinue).DirectoryName
+                                    if ( ($ModulePath) -and (Test-Path $ModulePath) )
                                         {
                                             $Result = takeown /F $ModulePath /A /R
                                             $Result = icacls $modulePath /reset
@@ -761,8 +760,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                                     Uninstall-Module -Name $Module.Name -force -ErrorAction SilentlyContinue
 
                                     # Sometimes uninstall-module doesn't clean-up correctly. This will ensure complete deletion of leftovers !
-                                    $ModulePath = (get-item $Module.Path).DirectoryName
-                                    if (Test-Path $modulePath) 
+                                    $ModulePath = (get-item $Module.Path -ErrorAction SilentlyContinue).DirectoryName
+                                    if ( ($ModulePath) -and (Test-Path $ModulePath) )
                                         {
                                             $Result = takeown /F $ModulePath /A /R
                                             $Result = icacls $modulePath /reset
@@ -793,7 +792,6 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
             {
                 Write-host ""
                 Write-Host "   Microsoft.Graph was not found on this computer. "
-                Write-host "   Add switch -InstallLatestMicrosoftGraph if you want to install latest version"
                 Write-host ""
                 $FoundGraph = $false
                 $NewerVersionDetected = $false
@@ -876,16 +874,22 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
         # Re-install
         ElseIf ( ($InstallLatestMicrosoftGraph) -and ($NewerVersionDetected -eq $false) -and ($FoundGraph -eq $true) )
             {
+                # Checking latest version in PSGallery
+                $online = Find-Module -Name Microsoft.Graph -Repository PSGallery
+
                 Write-host ""
-                Write-Host "   Re-installing latest version of Microsoft.Graph ... please wait !"
+                Write-Host "   Re-installing latest version ($($online.version)) of Microsoft.Graph from PS Gallery ... Please Wait !"
                 Install-module Microsoft.Graph -Scope $Scope -Force
             }
         
         # New install
         ElseIf ( ($InstallLatestMicrosoftGraph) -and ($NewerVersionDetected -eq $false) -and ($FoundGraph -eq $false) )
             {
+                # Checking latest version in PSGallery
+                $online = Find-Module -Name Microsoft.Graph -Repository PSGallery
+
                 Write-host ""
-                Write-Host "   Installing latest version of Microsoft.Graph ... please wait !"
+                Write-Host "   Installing latest version ($($online.version)) of Microsoft.Graph from PS Gallery ... Please Wait !"
                 Install-module Microsoft.Graph -Scope $Scope -Force
             }
 
@@ -903,8 +907,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                     Uninstall-module -Name $ModuleRemove.Name -RequiredVersion $ModuleRemove.Version -Force -ErrorAction SilentlyContinue
 
                     # Removing left-overs if uninstall doesn't complete task
-                    $ModulePath = (get-item $ModuleRemove.Path).DirectoryName
-                    if (Test-Path $modulePath) 
+                    $ModulePath = (get-item $ModuleRemove.Path -ErrorAction SilentlyContinue).DirectoryName
+                    if ( ($ModulePath) -and (Test-Path $ModulePath) )
                         {
                             $Result = takeown /F $ModulePath /A /R
                             $Result = icacls $modulePath /reset
@@ -920,8 +924,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAOTIJ0AZoaScrl
-# 6skxDHvXIN23hX7vpQAgjnD6u8D3OaCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDb0SokhokS0JHh
+# F7Dn5Eq+kfeiRkBI1W/4l2Gf3b4RwqCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -1029,17 +1033,17 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEID21qkRzT4fJjRQjITMtKXDv
-# YdpVWhjhHjmwbrQAWyVcMA0GCSqGSIb3DQEBAQUABIICABLX2MLSnnAfdHOmr4t2
-# +Hfns/SAe5LSOEXY3gtbMVCLSSOGK3TMDt+/yJti6poTRqjlunNrc+pRZCaRh1D3
-# fU8SXfA2Xp+lu1B/fqjKbM4DdZ+af7+J7+tHWGnqJXzuziuun+GJvuGbuy+l41SJ
-# U6RcrKkRHdnRm4VniGeTA8iUYCW3IS8PQE5MQc7kVF9E6nuigYTFWNV22YwUX3lk
-# JaKoQ2pf2gwpvinzNwpyMERvmJssn20ZAp5q9TUHFGAjg/TNzDnBSsVjMetOwX9A
-# pDdq+Q43omyoDUGAEaV11Sh+rgaKSP3H+fcFYuDXUTeWvA5BjWRKy7q96fyenOmq
-# 8nVjaL0AqgZ4TlelnK/7j8XY1ZCntumYgRZxsh296XyZNAlyp6gAbqcWhN+425Ge
-# 4iHKANeuL/t7fAK5lHaLia67frwcmFBhCYMkeTXQPhvKOl6/dtXzvnCUcrVYoIpm
-# bO2gXlFjkZdFNGkrGEcNqflDxW/AXj2MYWZB82BeMBLTEsUDR+Y1SdYQQ5XfBeZ2
-# RrsOO+p52JDRHrZ/J8L55GO6jwZt5bSInYpWI/HEIslBvnTKK8WcQbsIixVvbVBu
-# RgTfOCo1HaKT3wniOKfq9U77yx7zXmh4p/PADpnDh2HjOCzVIUaAtHubd5dMEONL
-# rS0/B+xSFBAJ7AkaR6z6vwfY
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIMZKaufUEm3kh6d5iuvgR5bl
+# Y0IUiqJcREzHoJTpXGpGMA0GCSqGSIb3DQEBAQUABIICAKlLitXP4ted9PEPqE74
+# tVtR6laV0OG6Aok+qwKqzuBo25ZREPWx7PhTdNHGvXO+tXoFcaqOVXafYYCDda+p
+# FXbQOzwBgFcjNsnWxNSUd0DU/ssfgZxdfF2YSl7KTMdwYa10wKFbyvzkIDuixKne
+# M3/OGJp1K0Agi3+ipAEHUtlhBQ/vseb3WQWDLYS0PQoFahTU343ivNuVXubSGgv0
+# UlVdIfrGn8Y3R8UFjcvCZSkyKl3jB9Gl6U1onqfBB3EhdA/mHyDw+dS+6h/3xOY1
+# s6YJNMujVhwshie5hpiTxPDXcCQ2etJQ+3X5nEx0tVaEtthUKu3loTeddt9cCp5x
+# E4ZGICnqfpNpPu327UQ0zVlXv6/9xKETJjFVoc4XjM/pEjigBeHxEe6qVp9iZBRr
+# GZPvLaDo0VpVrt004MvsTKpg3/5hAprlFdgAsomg0UxvyPSZsoeNOAWnrWwn+mOk
+# XFfn8hTh2SkWLfHGLh/zVhBDlwRldN2N4ZNmhAExa5XZXTF7yTh3EBL6jedHVIEP
+# GpPfQBPcSWM+Bd/5sxhtAJVFgtPmK5CjX4yDpPPGoxXmC7IlLcTUYEUjRw4JW/W1
+# OfrBq/EkM8ED9Kg2Jj3M//UKxGwoEuagLrJ8KuAAy69zrjtmUrzaHOFTz6v5SFHX
+# 6jnb+SYV0jOHduln8Zr35u6c
 # SIG # End signature block
