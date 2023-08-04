@@ -83,7 +83,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 
     If ($RemoveAllMicrosoftGraphVersions)
         {
-            Write-Host "Removing all versions of Microsoft.Graph (main modules) ... Please Wait !"
+            Write-host ""
+            Write-Host "Removing all versions of Microsoft.Graph main module ... Please Wait !"
             Remove-Module Microsoft.Graph -Force -ErrorAction SilentlyContinue
             Uninstall-Module Microsoft.Graph -AllVersions -Force -ErrorAction SilentlyContinue
 
@@ -102,7 +103,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                         {
                             ForEach ($Module in $LoadedModules)
                                 {
-                                    Write-Host "Removing module $($Module.Name) (version: $($Module.Version)) ... Please Wait !"
+                                    Write-Host "Removing dependency module $($Module.Name) (version: $($Module.Version)) ... Please Wait !"
                                     Remove-Module -Name $Module.Name -force -ErrorAction SilentlyContinue
                                     Uninstall-Module -Name $Module.Name -force -ErrorAction SilentlyContinue
 
@@ -121,7 +122,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                             $LoadedModules = Get-Module -Name "Microsoft.Graph.Authentication" -ListAvailable -ErrorAction SilentlyContinue
                             ForEach ($Module in $LoadedModules)
                                 {
-                                    Write-Host "Removing module $($Module.Name) (version: $($Module.Version)) ... Please Wait !"
+                                    Write-Host "Removing dependency module $($Module.Name) (version: $($Module.Version)) ... Please Wait !"
                                     Remove-Module -Name $Module.Name -force -ErrorAction SilentlyContinue
                                     Uninstall-Module -Name $Module.Name -force -ErrorAction SilentlyContinue
 
@@ -145,20 +146,20 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 
     #-----------------------------------------------------------------------------------------
 
+    Write-host ""
     Write-Host "Checking if Microsoft.Graph is installed"
         $Installed = Get-module Microsoft.Graph.* -ListAvailable
 
         If ($Installed)
             {    
                 Write-host ""
-                Write-Host "   OK - Microsoft.Graph was detected"
+                Write-Host "OK - Microsoft.Graph was detected"
                 $FoundGraph = $true
             }
         Else
             {
                 Write-host ""
-                Write-Host "   Microsoft.Graph was not found on this computer. "
-                Write-host ""
+                Write-Host "Microsoft.Graph was not found on this computer. "
                 $FoundGraph = $false
                 $NewerVersionDetected = $false
             }
@@ -176,7 +177,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                 If ($ShowVersionDetails)
                     {
                         Write-host ""
-                        Write-Host "   Installed versions of Microsoft.Graph are [ $($InstalledVersionsCount) ]"
+                        Write-Host "Installed versions of Microsoft.Graph are [ $($InstalledVersionsCount) ]"
                         $InstalledVersions | Group-Object -Property Version
                     }
 
@@ -189,13 +190,13 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                     {
                         $NewerVersionDetected = $true
                         Write-host ""
-                        Write-host "   Newer version ($($online.version)) of Microsoft.Graph was detected in PSGallery"
+                        Write-host "Newer version ($($online.version)) of Microsoft.Graph was detected in PSGallery"
                     }
                 Else
                     {
                         # No new version detected ... continuing !
                         Write-host ""
-                        Write-host "   OK - Running latest version of Microsoft.Graph"
+                        Write-host "OK - Running latest version ($($LatestVersion.version)) of Microsoft.Graph"
                         $NewerVersionDetected = $false
                     }
 
@@ -210,13 +211,13 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                 If ($VersionsCleanupCount -gt 0)
                     {
                         Write-Host ""
-                        Write-Host "   You have $VersionsCleanupCount older versions of Microsoft.Graph to remove"
+                        Write-Host "You have $VersionsCleanupCount older versions of Microsoft.Graph to remove"
                         Write-Host ""
                     }
                 ElseIf ($VersionsCleanupCount -eq 0)
                      {
                         Write-Host ""
-                        Write-Host "   OK - You have no older versions of Microsoft.Graph installed"
+                        Write-Host "OK - You have no older versions of Microsoft.Graph installed"
                         Write-Host ""
                      }
 
@@ -244,7 +245,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                 $online = Find-Module -Name Microsoft.Graph -Repository PSGallery
 
                 Write-host ""
-                Write-Host "   Re-installing latest version ($($online.version)) of Microsoft.Graph from PS Gallery ... Please Wait !"
+                Write-Host "Re-installing latest version ($($online.version)) of Microsoft.Graph from PS Gallery ... Please Wait !"
                 Install-module Microsoft.Graph -Scope $Scope -Force
             }
         
@@ -255,7 +256,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                 $online = Find-Module -Name Microsoft.Graph -Repository PSGallery
 
                 Write-host ""
-                Write-Host "   Installing latest version ($($online.version)) of Microsoft.Graph from PS Gallery ... Please Wait !"
+                Write-Host "Installing latest version ($($online.version)) of Microsoft.Graph from PS Gallery ... Please Wait !"
                 Install-module Microsoft.Graph -Scope $Scope -Force
             }
 
@@ -288,8 +289,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUnr2solLTa5KeZOgn3wVaoSd0
-# j9yggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUVTpVKIom1z5kENBMm/OycsYj
+# TLmggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -368,16 +369,16 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# iwNFpZfdkjJoUxt2BCkwM9LUqCYwDQYJKoZIhvcNAQEBBQAEggIAZqZKtbg1krTJ
-# +HuXnqpt+iV5aHWiHW5zeYNZZ6ZZecZr2qeHvjPt+zmoJTBMoAGpum1LzPs/IpnN
-# fHaUNTQIoa1d9PqjOaASZ6xtK61pyNI5yy2eL8mXM9IbLkJNyeSVI42jY4+DiuVb
-# hvyRMmM2UToR5K5Ja6ozm737CMKTFg1a58AZEsKzf2PU5UtJt+ZFcRbxOZxr67nN
-# NTwBR7L3UlJHWtEv9e0jzmHg7ubvh/lkn2kVmarZhmqMl/JsRMFis3b6oGGX0ffT
-# SfXYlc3uwNF9AgQYpkYCUokMH7Jj2taeukokYb8qtNDmB6sf3oJbp2L5rrCnA7lS
-# S9E4sCmT02+mihcWQ5WPiN/Bk6/qKeCc7ypx552VPSEPzAR6Q64e0cHfQ4+f4+WT
-# YOSY42LX5EjR5N5HcQBO/yrYrd6hYuoTN/Xmc+vzHKqMzcpNhiiSzt2Db5OvSNBn
-# zJzAb9zDwSSOxjxrD3eKyTHbBVmkjxjraz9/sKjv1WBCh4k8BA9U9QX3Ke92d/Zr
-# MoL2IzBcDJj6vLelR7SbWJHuStc1+uITgpwN6t7mdPvwIg8XJD34n/FHg/+cIyR1
-# 6IhsIFNScJoZyI7zn3l3X8LbkXb/rk56Wl3BDfqfg1sQXX000HtgoVm+P/EYkK5R
-# YeOjevM7qON1/q2HohQCWvrwc1UIxq0=
+# CNyZlKF0E2vkuoTccE8DQ6iGnXIwDQYJKoZIhvcNAQEBBQAEggIAcVGnkAwi/kUP
+# Yr5FoXCccfOOG2m4KMfJo7qSMsKmtrqFGsoeSOBOymhCfJrj4kAVo6SVpVzkio1c
+# 2YxVwDg2/N6gST7pw20KtXaHvqvWNbB0g8C/FCmsM7yryvHs5cHqUBTDxkcrDdnZ
+# PkWWQ5o0LCJJSNANsijw799Fzsde5+l1XEbwBESLTBGUpyZanZd3/ROt6yKO7MWl
+# kps5bmShCiBICpuPprIMuK7L0AYjMvH3SLM28qVTfKnE82hTauU58V92cZRgyLQA
+# ZZT8qQZCeMkinIJFsD05htnYhpPaIHCBxg4xtAAb93LulXGHrxBMYV+llyB/dZTL
+# rTn6AkZM+/g/E1+5gV47DD5v/380VlF/mtsyjwlkq8mpBRDiKp7zUoJqrkg0/Xnn
+# QBocj89BWFv7G2ZOTdGiJj74EBgOuisqlMyI88Vx+U9iNFU0z4Wg1S1prGf2LZIB
+# 9V/8ly5SG/pDPxyeUVODEXxJSLRk8ZFTop1HU1Ad8sr8SAwecYTsi0pbNp1ZpxaT
+# h3Gj7BT4NBqphiI2XP6/cd1VlQQmOEcNDCiLsA96Rey6I4giDVnkGZ7pQIJBVLp3
+# TgnJRLuDjzeYJ3EryPccKHH8cMHl3vFR2B+tWYYA1rUu/ryOs0gbILBqnYn4DSWg
+# W+okTS8QZdBhh3vBu9plMzI5PtKww7k=
 # SIG # End signature block
