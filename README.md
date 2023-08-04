@@ -202,7 +202,7 @@ Manage-Version-Microsoft.Graph -CleanupOldMicrosoftGraphVersions
 Manage-Version-Microsoft.Graph -RemoveAllMicrosoftGraphVersions
 ```
 
-![Removing](img/prereq-4.jpg)
+![Removing](img/remove.jpg)
 
 
 
