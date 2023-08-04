@@ -1,4 +1,5 @@
-﻿Function Manage-Version-Microsoft.Graph
+﻿
+Function Manage-Version-Microsoft.Graph
 {
 <#
 .SYNOPSIS
@@ -94,7 +95,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                 {
                     $Retry = 1 + $Retry
 
-                    $LoadedModules = Get-InstalledModule Microsoft.Graph.* -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne 'Microsoft.Graph.Authentication' }
+                    $LoadedModules = Get-Module Microsoft.Graph.* -ListAvailable -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne 'Microsoft.Graph.Authentication' }
                     $LoadedModules = $LoadedModules | Sort-Object -Property Name
 
                     # Modules found
@@ -107,7 +108,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                                     Uninstall-Module -Name $Module.Name -force -ErrorAction SilentlyContinue
 
                                     # Sometimes uninstall-module doesn't clean-up correctly. This will ensure complete deletion of leftovers !
-                                    $ModulePath = $Module.InstalledLocation
+                                    $ModulePath = (get-item $Module.Path).DirectoryName
                                     if (Test-Path $modulePath) 
                                         {
                                             $Result = takeown /F $ModulePath /A /R
@@ -118,17 +119,27 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                                 }
 
 
-                            $LoadedModules = Get-InstalledModule Microsoft.Graph.Authentication
+                            $LoadedModules = Get-Module -Name "Microsoft.Graph.Authentication" -ListAvailable -ErrorAction SilentlyContinue
                             ForEach ($Module in $LoadedModules)
                                 {
                                     Write-Host "Removing module $($Module.Name) (version: $($Module.Version)) ... Please Wait !"
                                     Remove-Module -Name $Module.Name -force -ErrorAction SilentlyContinue
                                     Uninstall-Module -Name $Module.Name -force -ErrorAction SilentlyContinue
+
+                                    # Sometimes uninstall-module doesn't clean-up correctly. This will ensure complete deletion of leftovers !
+                                    $ModulePath = (get-item $Module.Path).DirectoryName
+                                    if (Test-Path $modulePath) 
+                                        {
+                                            $Result = takeown /F $ModulePath /A /R
+                                            $Result = icacls $modulePath /reset
+                                            $Result = icacls $modulePath /grant Administrators:'F' /inheritance:d /T
+                                            $Result = Remove-Item -Path $ModulePath -Recurse -Force -Confirm:$false
+                                        }
                                 }
                         }
 
                     # Verifying if all modules have been removed
-                    $InstalledModules = Get-InstalledModule Microsoft.Graph.* -ErrorAction SilentlyContinue
+                    $InstalledModules = Get-Module Microsoft.Graph.* -ErrorAction SilentlyContinue
                 }
             Until ( ($LoadedModules -eq $null) -or ($Retry -eq 5) )
         }
@@ -273,8 +284,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUHRxOp8ddVzph0guJVCfIgB8Q
-# 2Kyggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUOi4HWSTiQpc9gKZPB4UkVJ1u
+# xjWggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -353,16 +364,16 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# SjPGwZAOOyO5L31/LJG8XX1BPZMwDQYJKoZIhvcNAQEBBQAEggIAAueBIbNDSMpk
-# U3vVJG2ah/6TItwTBwzEoKtiYx6q6nogtAzc/hbYC/zr48n3YFGVP3f5sV6yGOeT
-# QjCc91aeNz/Q8Z9OdxHk1lXoYp/M3SYb3ROd3Vk/W2BVJX1PtgXY1sww64WXjx84
-# NhZRficxAGFr99ZSdTjZJzJzqwfp18CeJSOgotbkdk4e/6Bp+/TmzFFMGCApCKts
-# ghvqCy81h9JVKzxQrRTWf7Wy8fK4zA+v/U6/VPvFNYugUPvRHCYeuvRFVYr8vGgX
-# INku48RB48+DvF1ipbyb3ar9E57E9lsKgDuG7VkBa3UhTzSLrNc65ejDL8YDLHbK
-# YN5UrEfiOQ6gRctDEjpGFE3KgyNocvbr59SWo5H1UFoGEsbfHD/xu1DMjOQxRuL3
-# CxFWeQSU6fWyp1UNxYOyCuY/fUS65BVsAZCqoQIKLDaRRffOuLVlpPohte7f3+ju
-# 5h7HZxFkaQvbt+uUxfOkTTCuHpVJoaob8QpaL8a+qAAlWsYJuz0D/nbbobWtH0xT
-# o64n4xOO92hAU1ll7xU+32XHGQA4QVEEXrkS4MjHfewa3Bh7RiDISrVuAF0ug+vz
-# 8s78xPBg7dG2fhV1qnIQLfP47ZeIogH/LZ2zcwRy83nvJ9fg5VE7VYYJ854uGiKA
-# CB/4gLD/oOd6egngzzyvYTvBJ8FvKaA=
+# Pyj9nBNqZL8nUA+HXPnoFf/fCCYwDQYJKoZIhvcNAQEBBQAEggIAVj6xUOIGoG8R
+# KjuIqw9ZDXWAJ5CiKSf1toDSoLxeREszOktrL0PFT2e7tdNEFqnM+TvPdxASX2OS
+# 4OaezUlakwz4vaxHjjThwHSsBcUIWSTBJNRJB2RGLXhmtlDUNF4VHHeRqsWO4F0q
+# crxcae/nvQ6j2vuXWySiWSs9wlEX/3fTVslzt7QPAHkkmJbKBRA9TBeRmckEdFNA
+# if9U8Zi7ZCa/2VqscrNS6L/byTqmL033H/J+/AJrlOZMVK0G533kYAXjVRAQHiBD
+# eZZAa0wPjIwmUTWs6IjS6cgO1B8caG45RVC+bDXpwgsJKbZPPGNmpdbJFfVsBbqW
+# HRwFAdrhdKb6T7pjcPq2LjXV8/COuLbAfOsIp3UHETKhx/xsUcLiD9LJryAmcuAH
+# 4RPmMtJX5xB2SpUh/eyia5TftCbwE9Rnb2ET33UlNN0Up4XKMEKRlBbwtok4Y1RI
+# ioKVgGxB0khLmhcCCslPn+4T63NXgNGfdW+VEqCZpjtvKYDIFBAYvqyTcvlOoUBg
+# +w78ZV9LsZISvAY8flc4NTubStm+/mvYsvscuc9u0Wcd8tPAt5jeoyQkVW/FA2A0
+# XQ6LX+2kYLfAHwTPBuh24nJEmSdbqUSYnVn41nIETfCywzw+kpTGF9VjcVEjAHBn
+# gb5+SCPSaZAbGh22XVAW7KOY+yrxMLE=
 # SIG # End signature block
