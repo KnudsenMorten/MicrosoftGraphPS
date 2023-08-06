@@ -215,7 +215,7 @@ Manage-Version-Microsoft.Graph -RemoveAllMicrosoftGraphVersions
 ```
 # Microsoft Graph connect with AzApp & CertificateThumprint
 Connect-MicrosoftGraphPS -AppId $global:HighPriv_Modern_ApplicationID_Azure `
-                         -Secret $global:HighPriv_Modern_Application_Secret_Azure `
+                         -AppSecret $global:HighPriv_Modern_Application_Secret_Azure `
                          -TenantId $global:AzureTenantID
 
 Output:
