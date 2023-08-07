@@ -53,6 +53,9 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph
 # Show details of installed Microsoft.Graph and install latest (if found)
 Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -Scope CurrentUser
 
+# Force Re-install of Microsoft.Graph
+Manage-Version-Microsoft.Graph -ForceReinstall -Scope AllUsers
+
 # Show details of installed Microsoft.Graph and clean-up old versions (if found)
 Manage-Version-Microsoft.Graph -CleanupOldMicrosoftGraphVersions
 
@@ -62,6 +65,7 @@ Manage-Version-Microsoft.Graph -RemoveAllMicrosoftGraphVersions
 # Show details, install latest (if found) and clean-up old versions (if found)
 Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions
 #>
+
     [CmdletBinding()]
     param(
             [parameter()]
@@ -73,6 +77,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                 [switch]$RemoveAllMicrosoftGraphVersions = $false,
             [Parameter()]
                 [switch]$InstallLatestMicrosoftGraph = $False,
+            [Parameter()]
+                [switch]$ForceReinstall = $False,
             [Parameter()]
                 [switch]$ShowVersionDetails = $False
          )
@@ -239,7 +245,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
             }
 
         # Re-install
-        ElseIf ( ($InstallLatestMicrosoftGraph) -and ($NewerVersionDetected -eq $false) -and ($FoundGraph -eq $true) )
+        ElseIf ( ($ForceReinstall -eq $true) -and ($FoundGraph -eq $true) )
             {
                 # Checking latest version in PSGallery
                 $online = Find-Module -Name Microsoft.Graph -Repository PSGallery
@@ -289,8 +295,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUVTpVKIom1z5kENBMm/OycsYj
-# TLmggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUomEVwRogHxoTY6LXEKJAy0I6
+# hKSggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -369,16 +375,16 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# CNyZlKF0E2vkuoTccE8DQ6iGnXIwDQYJKoZIhvcNAQEBBQAEggIAcVGnkAwi/kUP
-# Yr5FoXCccfOOG2m4KMfJo7qSMsKmtrqFGsoeSOBOymhCfJrj4kAVo6SVpVzkio1c
-# 2YxVwDg2/N6gST7pw20KtXaHvqvWNbB0g8C/FCmsM7yryvHs5cHqUBTDxkcrDdnZ
-# PkWWQ5o0LCJJSNANsijw799Fzsde5+l1XEbwBESLTBGUpyZanZd3/ROt6yKO7MWl
-# kps5bmShCiBICpuPprIMuK7L0AYjMvH3SLM28qVTfKnE82hTauU58V92cZRgyLQA
-# ZZT8qQZCeMkinIJFsD05htnYhpPaIHCBxg4xtAAb93LulXGHrxBMYV+llyB/dZTL
-# rTn6AkZM+/g/E1+5gV47DD5v/380VlF/mtsyjwlkq8mpBRDiKp7zUoJqrkg0/Xnn
-# QBocj89BWFv7G2ZOTdGiJj74EBgOuisqlMyI88Vx+U9iNFU0z4Wg1S1prGf2LZIB
-# 9V/8ly5SG/pDPxyeUVODEXxJSLRk8ZFTop1HU1Ad8sr8SAwecYTsi0pbNp1ZpxaT
-# h3Gj7BT4NBqphiI2XP6/cd1VlQQmOEcNDCiLsA96Rey6I4giDVnkGZ7pQIJBVLp3
-# TgnJRLuDjzeYJ3EryPccKHH8cMHl3vFR2B+tWYYA1rUu/ryOs0gbILBqnYn4DSWg
-# W+okTS8QZdBhh3vBu9plMzI5PtKww7k=
+# a2+Nnpj3L60lHo8yvPcdNJD9PXwwDQYJKoZIhvcNAQEBBQAEggIAoUXP01EUMa3Z
+# jRVwWeiIcCexy3mFLocvAP4VyKLDmlXO6DyrOS8E7sDXqO8Ym38do/NqH6ciyLJs
+# l8of+gQfZcMnPP+HhDErPMrUe0b6cDi/2SFrG9+oGaI0OayDaF1K6mhyE4Qx1m4r
+# 2tk9d3OQUQyZ7k1J7jXzRIASWJSi6RAY2Mct6dXEQN7PuDzEqjbc29fSbK7qVA0h
+# c451RtNAzHhJ2hl4P9M3c5e1YTuK+Ss2p7Q11fwLfOe5qQMCMw1F/N3k8QTECSe5
+# i9RoGv7txQPjuHJjwfhIK8W7xV00OyK7y3sHkqSbzXwbcwOczpB6spyAiJuQHRnR
+# qtl+uF3OOo42vZsKHgNt0UoZ8RH8p6uOgNNORriKvzrQ6cP0OcWwWdjAOeAlNyk7
+# 0K5GQHqMk7zPjOgn1x2jUSWz2I3S+XEonPbGGy/K9tgzaP66f93eOT7OVK/60/lr
+# 1E3vYFVFpEgKxObXZ8ipAMlomwQAqYlqaUcKY5CMutoWNujIfx7XYzrOrWwm9lw7
+# mWHILt3rvcTUv5WI2+4RCnsgR7xC94V6VtpKXa0ZqiKJOKIwI3t1XGa/otEQyV55
+# JMCo3QxVWn7Sp66n5U97vgegSMtxyF9tAq6CGmRMPqslXyy/QRU9TpOrtf6+c1QM
+# k3vpemptsAAewBz0rxefHrJo/Ohj95U=
 # SIG # End signature block

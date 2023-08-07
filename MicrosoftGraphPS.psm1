@@ -345,77 +345,89 @@ Function InstallUpdate-MicrosoftGraphPS
     InstallUpdate-MicrosoftGraphPS -Scope AllUsers -AutoUpdate
 #>
 
-param(
-      [parameter()]
-          [ValidateSet("CurrentUser","AllUsers")]
-          $Scope = "AllUsers",
-      [parameter()]
-          [switch]$AutoUpdate = $False
-     )
+    param(
+          [parameter()]
+              [ValidateSet("CurrentUser","AllUsers")]
+              $Scope = "AllUsers",
+          [parameter()]
+              [switch]$AutoUpdate = $False
+         )
 
-    # check for MicrosoftGraphPS
-        $ModuleCheck = Get-Module -Name MicrosoftGraphPS -ListAvailable -ErrorAction SilentlyContinue
+    #####################################################################
+    # MicrosoftGraphPS
+    #####################################################################
+    $Module = "MicrosoftGraphPS"
+
+    $ModuleCheck = Get-Module -Name $Module -ListAvailable -ErrorAction SilentlyContinue
         If (!($ModuleCheck))
             {
-                # check for NuGet package provider
-                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+                Write-host ""
+                Write-host "Installing latest version of $($Module) from PsGallery in scope $($Scope) .... Please Wait !"
 
-                Write-Output ""
-                Write-Output "Checking Powershell PackageProvider NuGet ... Please Wait !"
-                    if (Get-PackageProvider -ListAvailable -Name NuGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue) 
+                Install-module -Name $Module -Repository PSGallery -Force -Scope $Scope
+                import-module -Name $Module -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+            }
+        Else
+            {
+                #####################################
+                # Check for any available updates                    
+                #####################################
+
+                    # Current version
+                    $InstalledVersions = Get-module $Module -ListAvailable
+
+                    $LatestVersion = $InstalledVersions | Sort-Object Version -Descending | Select-Object -First 1
+
+                    $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
+
+                    # Online version in PSGallery (online)
+                    $Online = Find-Module -Name $Module -Repository PSGallery
+
+                    # Compare versions
+                    if ( ([version]$Online.Version) -gt ([version]$LatestVersion.Version) ) 
                         {
-                            Write-Host "OK - PackageProvider NuGet is installed"
-                        } 
-                    else 
+                            Write-host ""
+                            Write-host "Newer version ($($Online.version)) of $($Module) was detected in PSGallery"
+                            Write-host ""
+                            Write-host "Updating to latest version $($Online.version) of $($Module) from PSGallery ... Please Wait !"
+                            
+                            Update-module $Module -Force
+                            import-module -Name $Module -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+                        }
+                    Else
                         {
-                            try
-                                {
-                                    Write-Host "Installing NuGet package provider .. Please Wait !"
-                                    Install-PackageProvider -Name NuGet -Scope $Scope -Confirm:$false -Force
-                                }
-                            catch [Exception] {
-                                $_.message 
-                                exit
-                            }
+                            # No new version detected ... continuing !
+                            Write-host ""
+                            Write-host "OK - Running latest version ($($LatestVersion.version)) of $($Module)"
                         }
 
-                Write-Output "Powershell module MicrosoftGraphPS was not found !"
-                Write-Output "Installing latest version from PsGallery in scope $Scope .... Please Wait !"
+                #####################################
+                # Clean-up older versions, if found
+                #####################################
 
-                Install-module -Name MicrosoftGraphPS -Repository PSGallery -Force -Scope $Scope
-                import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
-            }
+                    $InstalledVersions = Get-module $Module -ListAvailable
+                    $LatestVersion = $InstalledVersions | Sort-Object Version -Descending | Select-Object -First 1
+                    $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
 
-        Elseif ($ModuleCheck)
-            {
-                # sort to get highest version, if more versions are installed
-                $ModuleCheck = Sort-Object -Descending -Property Version -InputObject $ModuleCheck
-                $ModuleCheck = $ModuleCheck[0]
+                    Write-host ""
+                    ForEach ($ModuleRemove in $CleanupVersions)
+                        {
+                            Write-Host "Removing older version $($ModuleRemove.Version) of $($ModuleRemove.Name) ... Please Wait !"
 
-                Write-Output "Checking latest version at PsGallery for MicrosoftGraphPS module"
-                $online = Find-Module -Name MicrosoftGraphPS -Repository PSGallery
+                            Uninstall-module -Name $ModuleRemove.Name -RequiredVersion $ModuleRemove.Version -Force -ErrorAction SilentlyContinue
 
-                #compare versions
-                if ( ([version]$online.version) -gt ([version]$ModuleCheck.version) ) 
-                    {
-                        Write-Output "Newer version ($($online.version)) detected"
+                            # Removing left-overs if uninstall doesn't complete task
+                            $ModulePath = (get-item $ModuleRemove.Path -ErrorAction SilentlyContinue).DirectoryName
+                            if ( ($ModulePath) -and (Test-Path $ModulePath) )
+                                {
+                                    $Result = takeown /F $ModulePath /A /R
+                                    $Result = icacls $modulePath /reset
+                                    $Result = icacls $modulePath /grant Administrators:'F' /inheritance:d /T
+                                    $Result = Remove-Item -Path $ModulePath -Recurse -Force -Confirm:$false
+                                }
+                        }
 
-                        If ($AutoUpdate -eq $true)
-                            {
-                                Write-Output "Updating MicrosoftGraphPS module .... Please Wait !"
-                                Update-module -Name MicrosoftGraphPS -Force
-                                import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
-                            }
-                    }
-                else
-                    {
-                        # No new version detected ... continuing !
-                        Write-Output "OK - Running latest version"
-
-                        $UpdateAvailable = $False
-                        import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
-                    }
-            }
+            } #If (!($ModuleCheck))
 }
 
 
@@ -687,6 +699,9 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph
 # Show details of installed Microsoft.Graph and install latest (if found)
 Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -Scope CurrentUser
 
+# Force Re-install of Microsoft.Graph
+Manage-Version-Microsoft.Graph -ForceReinstall -Scope AllUsers
+
 # Show details of installed Microsoft.Graph and clean-up old versions (if found)
 Manage-Version-Microsoft.Graph -CleanupOldMicrosoftGraphVersions
 
@@ -696,6 +711,7 @@ Manage-Version-Microsoft.Graph -RemoveAllMicrosoftGraphVersions
 # Show details, install latest (if found) and clean-up old versions (if found)
 Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions
 #>
+
     [CmdletBinding()]
     param(
             [parameter()]
@@ -707,6 +723,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                 [switch]$RemoveAllMicrosoftGraphVersions = $false,
             [Parameter()]
                 [switch]$InstallLatestMicrosoftGraph = $False,
+            [Parameter()]
+                [switch]$ForceReinstall = $False,
             [Parameter()]
                 [switch]$ShowVersionDetails = $False
          )
@@ -873,7 +891,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
             }
 
         # Re-install
-        ElseIf ( ($InstallLatestMicrosoftGraph) -and ($NewerVersionDetected -eq $false) -and ($FoundGraph -eq $true) )
+        ElseIf ( ($ForceReinstall -eq $true) -and ($FoundGraph -eq $true) )
             {
                 # Checking latest version in PSGallery
                 $online = Find-Module -Name Microsoft.Graph -Repository PSGallery
@@ -925,8 +943,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDvwfLAis3qIm9T
-# Be1/hCBgGoMQzjnPe3Y3F1ZR/4BvLaCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCArdWp1klEGoZHa
+# WbbbafWcCBC6WAZHwwN3xoOsVKmNz6CCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -1034,17 +1052,17 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIJTvkpt/HL/TRLe3nGqqSnMc
-# uit3URpdCZlotZGCq1mMMA0GCSqGSIb3DQEBAQUABIICALfX7PXGTXZt7Un/CAnM
-# NCiTe0mFpVXI3jYlbZ8cMVwBZN7PiI3QBn43Nn8zXcvmTGpVlqz31PA02Krpdr0Z
-# ebprbH/ip4h9p8RTqzPHC41Ra3+8tCoWe9fd8qU3vqyyEzlTXVgFXccsazvd2pZb
-# huTggmKe6N889Vh6Gb1tWOSwrcc9jWvDJI+qpqSYYchgbl4hrtEBKBMZeoQbySNc
-# iYkriCWCu2dah4K54PjpuwQTbCET55ury8jwXG4dS5Ik/KOzZUtiPqiEX0NSUYlM
-# lnSr2usqIHsIKi/R+E3cgp8DggLyPGPoicDD/BGBPCMssumVkJdjO/aXxUuIZH73
-# gTajWovdTcpXZ5cgSEkgI93zqsFAVyjf08A5WnraRghp0uCr38fTte4OItSwRYiy
-# 9qwp0BPxuIoGSYWwKYwLmb1rtMp+0IFl9mEFkHRyKTgDr9EdkS97QYN75a0BTcjv
-# E8O7ZR9xD4emttqv7oaLUTiVn9bp2HAK6VaZCw5J7Rs7fi2gZ8vJSpGEuXqQVfis
-# +qTcqAowlxm12uYLxM+wrJS+1vrblyuDQ4CZd9NFHRS+Wb4EVRvoR4MveK705srH
-# btRvv8Q+EeygUWycQo4wn0IWebWrHnrW6af99EBmO1BRUSyeZl41/uo1sZ0yUKTQ
-# aWOJ+U5vpLKKPe3ea1Ti2q9f
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIBJXwaEiidckDdOXBrLuW3UT
+# hcXI/NKQ0MAGxMaa1bSyMA0GCSqGSIb3DQEBAQUABIICALVfO028MNDG0ExWJM1g
+# FdSSanOCbejBPfMG/HSgnBS89CHtq2txBF6i0P7zPjLv7/uKiYKPTJqQxMXtkEmx
+# lQaP5kBl4oVpHFNiYD6/hU7F+6v2nHoOTP0h4v803lnleGVlmtJq0YAU1IIQyjkW
+# rcK1OiV3o/3wWRKEaPe0St1a0Qxf/ZhJsclbtp1oDF00gD1DdIMF+vt+wXWbOapk
+# UPKzTIVFZ2RDcdi3mLIIR1oMhyoFpXQrFc9mB5nCitK/dz8ur9roeCVj9rOfpjqf
+# YFOl7ZTk8YtOC8f/tGZ8BHIdohZ01unEZsElCVq2O5fqySkQ1o5Df06Ytqcyb0vk
+# XPOBMkGmuon7+oVeub8LQfdIphz42kSDOMtym03gmfJuQ9VXamWhJ3MzwW1DV2Gz
+# A1xsA5UhEA5YeLqHszI+4MgPkk7yGc1rr12T/1nClJbUAUkdtfppHo9VhRTqX80d
+# Fou0Irhu/vQ+2IpZLxq9YlBxzZQ0PlWFcrYouUp/Wq9yF0RVGuln8htUZLfWL1Mr
+# hAz99cXI6il5+3PRxpOZEY/Rafr+rFs3+8hP5OTJW0t4dL4uli7+1O5sVGevwA81
+# WnQ5/HNI5/RQxjBGlF4UL0IOIaU4VURd3+Yy3TWNhuJyWqSnJyw8uS24ArU7PvPu
+# tFNGzVfVmnZfMpsm8SUO66KE
 # SIG # End signature block

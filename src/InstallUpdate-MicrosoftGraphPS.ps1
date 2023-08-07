@@ -31,84 +31,96 @@
     InstallUpdate-MicrosoftGraphPS -Scope AllUsers -AutoUpdate
 #>
 
-param(
-      [parameter()]
-          [ValidateSet("CurrentUser","AllUsers")]
-          $Scope = "AllUsers",
-      [parameter()]
-          [switch]$AutoUpdate = $False
-     )
+    param(
+          [parameter()]
+              [ValidateSet("CurrentUser","AllUsers")]
+              $Scope = "AllUsers",
+          [parameter()]
+              [switch]$AutoUpdate = $False
+         )
 
-    # check for MicrosoftGraphPS
-        $ModuleCheck = Get-Module -Name MicrosoftGraphPS -ListAvailable -ErrorAction SilentlyContinue
+    #####################################################################
+    # MicrosoftGraphPS
+    #####################################################################
+    $Module = "MicrosoftGraphPS"
+
+    $ModuleCheck = Get-Module -Name $Module -ListAvailable -ErrorAction SilentlyContinue
         If (!($ModuleCheck))
             {
-                # check for NuGet package provider
-                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+                Write-host ""
+                Write-host "Installing latest version of $($Module) from PsGallery in scope $($Scope) .... Please Wait !"
 
-                Write-Output ""
-                Write-Output "Checking Powershell PackageProvider NuGet ... Please Wait !"
-                    if (Get-PackageProvider -ListAvailable -Name NuGet -ErrorAction SilentlyContinue -WarningAction SilentlyContinue) 
+                Install-module -Name $Module -Repository PSGallery -Force -Scope $Scope
+                import-module -Name $Module -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+            }
+        Else
+            {
+                #####################################
+                # Check for any available updates                    
+                #####################################
+
+                    # Current version
+                    $InstalledVersions = Get-module $Module -ListAvailable
+
+                    $LatestVersion = $InstalledVersions | Sort-Object Version -Descending | Select-Object -First 1
+
+                    $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
+
+                    # Online version in PSGallery (online)
+                    $Online = Find-Module -Name $Module -Repository PSGallery
+
+                    # Compare versions
+                    if ( ([version]$Online.Version) -gt ([version]$LatestVersion.Version) ) 
                         {
-                            Write-Host "OK - PackageProvider NuGet is installed"
-                        } 
-                    else 
+                            Write-host ""
+                            Write-host "Newer version ($($Online.version)) of $($Module) was detected in PSGallery"
+                            Write-host ""
+                            Write-host "Updating to latest version $($Online.version) of $($Module) from PSGallery ... Please Wait !"
+                            
+                            Update-module $Module -Force
+                            import-module -Name $Module -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+                        }
+                    Else
                         {
-                            try
-                                {
-                                    Write-Host "Installing NuGet package provider .. Please Wait !"
-                                    Install-PackageProvider -Name NuGet -Scope $Scope -Confirm:$false -Force
-                                }
-                            catch [Exception] {
-                                $_.message 
-                                exit
-                            }
+                            # No new version detected ... continuing !
+                            Write-host ""
+                            Write-host "OK - Running latest version ($($LatestVersion.version)) of $($Module)"
                         }
 
-                Write-Output "Powershell module MicrosoftGraphPS was not found !"
-                Write-Output "Installing latest version from PsGallery in scope $Scope .... Please Wait !"
+                #####################################
+                # Clean-up older versions, if found
+                #####################################
 
-                Install-module -Name MicrosoftGraphPS -Repository PSGallery -Force -Scope $Scope
-                import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
-            }
+                    $InstalledVersions = Get-module $Module -ListAvailable
+                    $LatestVersion = $InstalledVersions | Sort-Object Version -Descending | Select-Object -First 1
+                    $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
 
-        Elseif ($ModuleCheck)
-            {
-                # sort to get highest version, if more versions are installed
-                $ModuleCheck = Sort-Object -Descending -Property Version -InputObject $ModuleCheck
-                $ModuleCheck = $ModuleCheck[0]
+                    Write-host ""
+                    ForEach ($ModuleRemove in $CleanupVersions)
+                        {
+                            Write-Host "Removing older version $($ModuleRemove.Version) of $($ModuleRemove.Name) ... Please Wait !"
 
-                Write-Output "Checking latest version at PsGallery for MicrosoftGraphPS module"
-                $online = Find-Module -Name MicrosoftGraphPS -Repository PSGallery
+                            Uninstall-module -Name $ModuleRemove.Name -RequiredVersion $ModuleRemove.Version -Force -ErrorAction SilentlyContinue
 
-                #compare versions
-                if ( ([version]$online.version) -gt ([version]$ModuleCheck.version) ) 
-                    {
-                        Write-Output "Newer version ($($online.version)) detected"
+                            # Removing left-overs if uninstall doesn't complete task
+                            $ModulePath = (get-item $ModuleRemove.Path -ErrorAction SilentlyContinue).DirectoryName
+                            if ( ($ModulePath) -and (Test-Path $ModulePath) )
+                                {
+                                    $Result = takeown /F $ModulePath /A /R
+                                    $Result = icacls $modulePath /reset
+                                    $Result = icacls $modulePath /grant Administrators:'F' /inheritance:d /T
+                                    $Result = Remove-Item -Path $ModulePath -Recurse -Force -Confirm:$false
+                                }
+                        }
 
-                        If ($AutoUpdate -eq $true)
-                            {
-                                Write-Output "Updating MicrosoftGraphPS module .... Please Wait !"
-                                Update-module -Name MicrosoftGraphPS -Force
-                                import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
-                            }
-                    }
-                else
-                    {
-                        # No new version detected ... continuing !
-                        Write-Output "OK - Running latest version"
-
-                        $UpdateAvailable = $False
-                        import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
-                    }
-            }
+            } #If (!($ModuleCheck))
 }
 
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/tyiLlU5aXamk9Fr/1863gNN
-# WL2ggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUIcN081Cn0Pi6uTNCNYToVnvN
+# Yoyggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -187,16 +199,16 @@ param(
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# YULBHZ5wrmU6LA0ILBgNQ2iChL4wDQYJKoZIhvcNAQEBBQAEggIAK/jPXAe8nDFH
-# gpDVzWkqGKxhibpJkz4n6tP0glHG+dilcmyL4c+Jli6HiZm8/gs++MAWVkAW45q1
-# DT24cx+NwjyP1YZ0kXERIipR0J6Se7xpkFtQvlreZqt3PNLzqXT6DkBS+QH3Dctl
-# YCR2KvrhJaeT+3LWK+b5XyF/yzwPuuIzspGIl+GujhdIlDNIXb0PiYRBIXGvG3Jd
-# EyA8MXySUiQkW4U5ZUz+XMFBMYbWCS1gVnkTYN6wocYfBKi3EPkv6AmycuQP5Lig
-# qN5wIm3lYIbZD0WpkUHqA3bYHoSzBHdEmi/SGwmExXXHpHgXb7sno/E3Z97vsVkd
-# Y2RHnqJdg8ELvG04LvPYRrYtbH7rNlDxvCDUMV70k76JvTWSk0mSrCbWV8W6kYQG
-# fsigKno+SnOlcQrrsW54KeZOZTo2Ad4sMcZMLzQKOo6p+4GXUBrXpa3tm+GWFkWX
-# tkLqWYqjdRBB2UaEX4mTiOUJDYsJbQr1gEtGH3n0E8FrppwCTJsetIV9rpzjAw6R
-# 3Nw4LhVu8HfSdevdGSwseJSSk8niTW5iAOR4ktheddzpCSSvaDNTKBh4FnN+riEl
-# PPM8A2q+EaoF8q5l/b9Y4qbMnl2GMYfSGfrORDjysWVgBcpWmEuHKYNnc/sIWM8g
-# 6f9GfXefGNYefZaaoYK/gA+X+FGCF2I=
+# 3yQXKXqPJeAgyucpjqXUrAUTBlMwDQYJKoZIhvcNAQEBBQAEggIAecCS4UnwZzsz
+# JwQF6OE+ZH1rDn6kQJx47A/pjW+11i/68HOv6+zyDZaz6iXNrarmXrFR8pdrd4gI
+# hg/z7rw9g3Lh/nOWdPz1jFLrIDMGOFbSD+zgd8Z5bSEzR9bnsxaS0c/aFnzGXdWe
+# zh10xyQh1ffima1E0RwH4ynMv/evjF5gvLVlM+5nS/dXdKkwtvilYPE7GraPeiu2
+# zXIKpT0WhaYMzBEruJh6IYxX/LGn1j5AHE66SwarHEofCXaT044tPYW2N2ax1uNm
+# qBll/RAa24sxkRi3edtVGNTfbZ5KUkN33+RgJY2EUaJS9UIE3ibNx03vFKMOVt3J
+# 5/OCayxJzWBpc+RENQKnswryk9q90bhqDXCfiHSACdxeQcqKdxojSIyoDDH4L+9U
+# fxz2tXbzcpQOTrnlmgaRnaVg05YEcu47YPTW0yjQmeAb3yXgkqIHyJZXGYM2F7R/
+# p944FPPYaAB3gExrwSsJ9DBQ5kxhfn5Zy1iz3Cleldu8fYeL9ikeAW8tqpQ9DA20
+# UCAQJOJcDipLHAMjh90p4Ex7w3e1DawmTEd4MJUNCsvvbVx6zuk8wOjyyL64ynNV
+# ufjM1kFeEacP0cES4yc8//IzA4JcwzDg6OJ0Jix7ZTuGafDtr4HM99M6UOVX9ani
+# WVMzjn5JKINpm0xs7BCloT9JrJK3/rM=
 # SIG # End signature block
