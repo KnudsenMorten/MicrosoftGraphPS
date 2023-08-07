@@ -105,47 +105,11 @@ If (!($ModuleCheck))    # MicrosoftGraphPS is NOT installed
         Install-module -Name MicrosoftGraphPS -Repository PSGallery -Force -Scope $Scope
         import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking -WarningAction SilentlyContinue
     }
-        
-Elseif ($ModuleCheck)    # MicrosoftGraphPS is installed - checking version, if it should be updated
-    {
-        # sort to get highest version, if more versions are installed
-        $ModuleCheck = Sort-Object -Descending -Property Version -InputObject $ModuleCheck
-        $ModuleCheck = $ModuleCheck[0]
-
-        Write-host "Checking latest version of MicrosoftGraphPS module at PsGallery"
-        $online = Find-Module -Name MicrosoftGraphPS -Repository PSGallery
-
-        #compare versions
-        if ( ([version]$online.version) -gt ([version]$ModuleCheck.version) ) 
-            {
-                write-host ""
-                Write-host "   Newer version ($($online.version)) detected"
-
-                If ($AutoUpdate -eq $true)
-                    {
-                        write-host ""
-                        Write-host "   Updating MicrosoftGraphPS module .... Please Wait !"
-                        Write-Host ""
-
-                        Update-module -Name MicrosoftGraphPS -Force
-                        import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking -WarningAction SilentlyContinue
-                    }
-            }
-        else
-            {
-                # No new version detected ... continuing !
-                write-host ""
-                Write-host "   OK - Running latest version of MicrosoftGraphPS"
-                Write-Host ""
-
-                $UpdateAvailable = $False
-                import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking -WarningAction SilentlyContinue
-            }
-    }
 
 ##########################################################################################
-# Install-Update-Cleanup-Microsoft.Graph
+# Install/Update/Cleanup Microsoft.Graph and MicrosoftGraphPS
 ##########################################################################################
+
 If ($AutoUpdate)
     {
         Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions -Scope $Scope
@@ -193,6 +157,22 @@ Manage-Version-Microsoft.Graph -CleanupOldMicrosoftGraphVersions
 ```
 
 ![Removing](img/prereq-3.jpg)
+
+
+
+#### **Install, Update and Clean-up older Microsoft Graph versions (except the latest available version)**
+
+```
+Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions -Scope $AllUsers
+```
+
+
+
+#### **Force Re-install current Microsoft Graph version**
+
+```
+Manage-Version-Microsoft.Graph -ForceReinstall
+```
 
 
 
