@@ -68,15 +68,11 @@ If (!($ModuleCheck))    # MicrosoftGraphPS is NOT installed
         Install-module -Name MicrosoftGraphPS -Repository PSGallery -Force -Scope $Scope
         import-module -Name MicrosoftGraphPS -Global -force -DisableNameChecking -WarningAction SilentlyContinue
     }
-        
-Elseif ($ModuleCheck)    # MicrosoftGraphPS is installed - checking version, if it should be updated
-    {
-        InstallUpdate-MicrosoftGraphPS -Scope AllUsers -AutoUpdate
-    }
 
 ##########################################################################################
-# Install-Update-Cleanup-Microsoft.Graph
+# Install/Update/Cleanup Microsoft.Graph and MicrosoftGraphPS
 ##########################################################################################
+
 If ($AutoUpdate)
     {
         Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions -Scope $Scope

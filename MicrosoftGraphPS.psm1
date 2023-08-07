@@ -731,7 +731,87 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 
     #-----------------------------------------------------------------------------------------
 
-    # Remove all versions of Microsoft.Graph
+    #####################################################################
+    # MicrosoftGraphPS - install/update/remove
+    #####################################################################
+    $Module = "MicrosoftGraphPS"
+
+    Write-host "Checking module $($Module) ... Please Wait !"
+
+    $ModuleCheck = Get-Module -Name $Module -ListAvailable -ErrorAction SilentlyContinue
+        If (!($ModuleCheck))
+            {
+                Write-host ""
+                Write-host "Installing latest version of $($Module) from PsGallery in scope $($Scope) .... Please Wait !"
+
+                Install-module -Name $Module -Repository PSGallery -Force -Scope $Scope
+                import-module -Name $Module -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+            }
+        Else
+            {
+                #####################################
+                # Check for any available updates                    
+                #####################################
+
+                    # Current version
+                    $InstalledVersions = Get-module $Module -ListAvailable
+
+                    $LatestVersion = $InstalledVersions | Sort-Object Version -Descending | Select-Object -First 1
+
+                    $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
+
+                    # Online version in PSGallery (online)
+                    $Online = Find-Module -Name $Module -Repository PSGallery
+
+                    # Compare versions
+                    if ( ([version]$Online.Version) -gt ([version]$LatestVersion.Version) ) 
+                        {
+                            Write-host ""
+                            Write-host "Newer version ($($Online.version)) of $($Module) was detected in PSGallery"
+                            Write-host ""
+                            Write-host "Updating to latest version $($Online.version) of $($Module) from PSGallery ... Please Wait !"
+                            
+                            Update-module $Module -Force
+                            import-module -Name $Module -Global -force -DisableNameChecking  -WarningAction SilentlyContinue
+                        }
+                    Else
+                        {
+                            # No new version detected ... continuing !
+                            Write-host ""
+                            Write-host "OK - Running latest version ($($LatestVersion.version)) of $($Module)"
+                        }
+
+                #####################################
+                # Clean-up older versions, if found
+                #####################################
+
+                    $InstalledVersions = Get-module $Module -ListAvailable
+                    $LatestVersion = $InstalledVersions | Sort-Object Version -Descending | Select-Object -First 1
+                    $CleanupVersions = $InstalledVersions | Where-Object { $_.Version -ne $LatestVersion.Version }
+
+                    Write-host ""
+                    ForEach ($ModuleRemove in $CleanupVersions)
+                        {
+                            Write-Host "Removing older version $($ModuleRemove.Version) of $($ModuleRemove.Name) ... Please Wait !"
+
+                            Uninstall-module -Name $ModuleRemove.Name -RequiredVersion $ModuleRemove.Version -Force -ErrorAction SilentlyContinue
+
+                            # Removing left-overs if uninstall doesn't complete task
+                            $ModulePath = (get-item $ModuleRemove.Path -ErrorAction SilentlyContinue).DirectoryName
+                            if ( ($ModulePath) -and (Test-Path $ModulePath) )
+                                {
+                                    $Result = takeown /F $ModulePath /A /R
+                                    $Result = icacls $modulePath /reset
+                                    $Result = icacls $modulePath /grant Administrators:'F' /inheritance:d /T
+                                    $Result = Remove-Item -Path $ModulePath -Recurse -Force -Confirm:$false
+                                }
+                        }
+
+            } #If (!($ModuleCheck))
+
+    #----------------------------------------------------------------------------------------------------------------------------------------------
+
+    # Parameter/Switch to force removal of all versions of Microsoft.Graph
 
     If ($RemoveAllMicrosoftGraphVersions)
         {
@@ -943,8 +1023,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCArdWp1klEGoZHa
-# WbbbafWcCBC6WAZHwwN3xoOsVKmNz6CCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAb3T7oz4Xu2nH4
+# lEIvR1joKYya3j8b1ZFqcmXepfCevKCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -1052,17 +1132,17 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIBJXwaEiidckDdOXBrLuW3UT
-# hcXI/NKQ0MAGxMaa1bSyMA0GCSqGSIb3DQEBAQUABIICALVfO028MNDG0ExWJM1g
-# FdSSanOCbejBPfMG/HSgnBS89CHtq2txBF6i0P7zPjLv7/uKiYKPTJqQxMXtkEmx
-# lQaP5kBl4oVpHFNiYD6/hU7F+6v2nHoOTP0h4v803lnleGVlmtJq0YAU1IIQyjkW
-# rcK1OiV3o/3wWRKEaPe0St1a0Qxf/ZhJsclbtp1oDF00gD1DdIMF+vt+wXWbOapk
-# UPKzTIVFZ2RDcdi3mLIIR1oMhyoFpXQrFc9mB5nCitK/dz8ur9roeCVj9rOfpjqf
-# YFOl7ZTk8YtOC8f/tGZ8BHIdohZ01unEZsElCVq2O5fqySkQ1o5Df06Ytqcyb0vk
-# XPOBMkGmuon7+oVeub8LQfdIphz42kSDOMtym03gmfJuQ9VXamWhJ3MzwW1DV2Gz
-# A1xsA5UhEA5YeLqHszI+4MgPkk7yGc1rr12T/1nClJbUAUkdtfppHo9VhRTqX80d
-# Fou0Irhu/vQ+2IpZLxq9YlBxzZQ0PlWFcrYouUp/Wq9yF0RVGuln8htUZLfWL1Mr
-# hAz99cXI6il5+3PRxpOZEY/Rafr+rFs3+8hP5OTJW0t4dL4uli7+1O5sVGevwA81
-# WnQ5/HNI5/RQxjBGlF4UL0IOIaU4VURd3+Yy3TWNhuJyWqSnJyw8uS24ArU7PvPu
-# tFNGzVfVmnZfMpsm8SUO66KE
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIKrr5c+2ljCt0+fUnUBZGjUG
+# 0enhPMLTjuOd23e8iYEXMA0GCSqGSIb3DQEBAQUABIICAK6iWZC/dhlpYEYAm6hy
+# A4bteCzDAjKz8BlwxM6/fIfNeblt0xhMt+Qk66EtHfsL/L1V8/NyzGtgT6YQXgdR
+# eV1OAh4/Dbu7DAXETDWYX0SjrmxKgz0nYMOJXNxAaYN24OrrK+Ge74q95qnhVH+3
+# H3EzML48Cz636xPSnipU5SULeJazsOANvMc4YoHiWmIxrG440neyHo5vSFmIwDKU
+# GJIZABRw+QI4gFZeuMP4n5sQ4g2aADWjVcWHjIXLFq50H6P2ZYLvcJrFOzFMeICb
+# RQ4n/5SJneV7dtau30dxx9KU9XIJsYrin60zXTlBobHMV8nNwxK+xUhT8Qg8AGHg
+# cw3BHtXQpM3B14CL64Ha8Ar164Rx+be5CNGgSl0iS3XT/9DjNYm2P05Uw2+LVXUP
+# 9OexWktVR9bCtJjmyggIA5rbrkNcut58pTcAKzf8h1H62hL0FkCE8YO747GFN5Fq
+# sxZQkznKqUhgSV4udUNkDzwJ/4pv+17KZ+uZQ4N9AfCruQiu3ueQ/4TyHYrZuY2u
+# 9Ys0EjL30ngWjPiSFAs68Opmxbz5bjEFCUJmodwOqQwFew1v3bwe9mZ6kVoyi5+S
+# yY2Y6VoE9OYdoohp9kgri9uxpGkIvmH9FWf7jiIlX8Ha5VO1BF2M0lTsRSmH3dbr
+# q6NEmS2YcQaIC9Aou6aKIvDM
 # SIG # End signature block
