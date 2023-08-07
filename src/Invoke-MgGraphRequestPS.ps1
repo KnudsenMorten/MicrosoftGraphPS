@@ -47,13 +47,65 @@
                 $Method = "GET",
             [Parameter(mandatory)]
                 [ValidateSet("PSObject", "JSON", "HashTable", "HttpResponseMessage", IgnoreCase = $false)] 
-                $OutputType = "PSObject"
+                $OutputType = "PSObject",
+            [Parameter()]
+                [Object]$Body,
+            [Parameter()]
+                [Object]$Headers,
+            [Parameter()]
+                [Object]$ContentType,
+            [Parameter()]
+                [boolean]$SkipHeaderValidation,
+            [Parameter()]
+                [switch]$PassThru
          )
 
-    $Result       = @()
-    $ResultsCount = 0
+<# TROUBLESHOOTING !!
+    
+    $Uri = $Uri
+    $Method = "GET"
+    $OutputType = "PSObject"
 
-    $ResultsRaw   = Invoke-MGGraphRequest -Method $Method -Uri $Uri -OutputType $OutPutType
+#>
+    $Result        = @()
+    $ResultsCount  = 0
+
+    $CmdToRun_Hash = @{}
+
+    If ($Method)
+        {
+            $CmdToRun_Hash += @{ Method = $Method }
+        }
+    If ($Uri)
+        {
+            $CmdToRun_Hash += @{ Uri = $Uri }
+        }
+    If ($Headers)
+        {
+            $CmdToRun_Hash += @{ Headers = $Headers }
+        }
+    If ($Body)
+        {
+            $CmdToRun_Hash += @{ Body = $Body }
+        }
+    If ($OutputType)
+        {
+            $CmdToRun_Hash += @{ OutputType = $OutputType }
+        }
+    If ($ContentType)
+        {
+            $CmdToRun_Hash += @{ ContentType = $ContentType }
+        }
+    If ($SkipHeaderValidation)
+        {
+            $CmdToRun_Hash += @{ SkipHeaderValidation = $SkipHeaderValidation }
+        }
+    If ($PassThru)
+        {
+            $CmdToRun_Hash += @{ PassThru = $PassThru }
+        }
+
+    $ResultsRaw   = Invoke-MGGraphRequest @CmdToRun_Hash
 
     $Result       += $ResultsRaw.value
     $ResultsCount += ($ResultsRaw.value | Measure-Object).count
@@ -65,7 +117,44 @@
                 { 
                     Try
                         {
-                            $ResultsRaw    = Invoke-MGGraphRequest -Method $Method -Uri $ResultsRaw.'@odata.nextLink'  -OutputType $OutPutType
+                            $Uri = $ResultsRaw.'@odata.nextLink'
+
+                            $CmdToRun_Hash = @{}
+
+                            If ($Method)
+                                {
+                                    $CmdToRun_Hash += @{ Method = $Method }
+                                }
+                            If ($Uri)
+                                {
+                                    $CmdToRun_Hash += @{ Uri = $Uri }
+                                }
+                            If ($Headers)
+                                {
+                                    $CmdToRun_Hash += @{ Headers = $Headers }
+                                }
+                            If ($Body)
+                                {
+                                    $CmdToRun_Hash += @{ Body = $Body }
+                                }
+                            If ($OutputType)
+                                {
+                                    $CmdToRun_Hash += @{ OutputType = $OutputType }
+                                }
+                            If ($ContentType)
+                                {
+                                    $CmdToRun_Hash += @{ ContentType = $ContentType }
+                                }
+                            If ($SkipHeaderValidation)
+                                {
+                                    $CmdToRun_Hash += @{ SkipHeaderValidation = $SkipHeaderValidation }
+                                }
+                            If ($PassThru)
+                                {
+                                    $CmdToRun_Hash += @{ PassThru = $PassThru }
+                                }
+
+                            $ResultsRaw   = Invoke-MGGraphRequest @CmdToRun_Hash
                         }
                     Catch
                         {
@@ -85,8 +174,8 @@
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUE+9XQZZwIVrOEKU2felhp39c
-# Enmggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUl44OQ2+yUd7dyquulm3XBVS8
+# ddiggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -165,16 +254,16 @@
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# XfR1xWxoy+k7hKdOXT/seU6Sh4kwDQYJKoZIhvcNAQEBBQAEggIAgfp13xQrXqhj
-# KnI3ZO0a6PWqU7kkbU9D+kYAufd9aAiTtjSHN2dbiMbGkr7gTG1FP5YY/J8WcaL/
-# WPtc4QJi3GOvtQot/8btAZ6aGN37rCfQe9KF9GiJlQ5I3pTDjOhoRABQIAT7G6/0
-# SJuaooxSlrpULiPQcIkqBXqFtqoW8yeJ8Y7TjcPtK1bxR8yH06V8RQNTqDICjFuF
-# HdAIkpK7IFvTkIfoaurdHP8HkyOfTWaL1FStAKIknO+zKL3oxefBbdHQBJJsroXZ
-# YaDi4Hz6EOw5SPmyOeTJdeAflspNy4bGdelyFn+kEcMq8agZ3x92pAMIhKfeB9yx
-# uPpap9xikbBXrXKZgYwBp/wjX9LPFgAaOaifMsYmD8mxo6C+wNZukfO/3OmNtIjp
-# LMDD8UElC/nxo6a9egtkHBA6k0u66pfPueqwpn91B/TYlkOOTuQsyPVqhVMrtqV/
-# tqpwWppUB3CVWTXqz34AWw9eHgoN5IsmYtszxCJQCDwyivGvZYpDgaD1X3buZhBj
-# hE0nqJBsV/vTqlTyMDWcNRp4SR6FxkRr9lGWd1ZGzIzdbtTZJAw/KLXTR5KDYvdZ
-# xbe9BfQ3r6iT43wvLeLwJCaeZcrjR+qc9GTNsDGCFs9XXHihGWWz3F0UUTBfGDyE
-# DR8k5Ufgz8pSENDIsLjN8e1jhh/d+44=
+# DO08Vf3TtS02YGfpBNipMC7O1g8wDQYJKoZIhvcNAQEBBQAEggIAw341ZMN9n1Te
+# L8exotRusMlXR0HcTs21AAX+n7WQ/Ppye38dNDEYncrwDnk6IvmR/l+UsbSqznyo
+# CHe4/Y8U+NnRgLy59JxCDvg3/+DqgdYc2Z6pW5+8bZ2G9Kgx5CgR5djsMRI1Urso
+# ouDtwZXkBII2OkcdAoGoIVd8yLhJLFDKTmw3d5USNMo8QzkrKw3/HDxSvxEVrWo/
+# k6H/G/4tPOIFSxXmsjIlG1tKee5mn0kft+xFUhwVvSGsov4tT2WD2Tbn3BJgZAD8
+# lZZXfQIksdF6d2sr8JIn51gQc7srDu/9t9r0GpIYK+0u0fjDjHVqt3pdo6XzUyab
+# lnO3staMUXep53KHo02L0ZXuT/kryrIfvgmzCPS6RPuOAyUV8C5nHzoADoKa35MJ
+# wF7K6mueAEKmfzozWZbVKGtzPDZKwOfSKHJSr3hqohMOne/z67Ep1ZgldsLZa4UV
+# aMvgIXyv6086Y27OhMVssn+GlUbPgVxhSTPC606AsKEttjEHG4nge7cQEqt7Mesf
+# oRwloeGxZh5wdHU8FWVay5+c0WJYyvdRqMYhOMNVrYs401SksSHvesbG54iswNPs
+# i6pFee2WQCb5RvvYe1pUwYmQNIHthkBMWYa13baRAVKnxsQx//VSLFUg+eCA4H0w
+# oTWjNGFg7cjj5ttV7UQJ8tNufgWBWuc=
 # SIG # End signature block

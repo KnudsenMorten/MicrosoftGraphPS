@@ -480,13 +480,65 @@ Function Invoke-MgGraphRequestPS
                 $Method = "GET",
             [Parameter(mandatory)]
                 [ValidateSet("PSObject", "JSON", "HashTable", "HttpResponseMessage", IgnoreCase = $false)] 
-                $OutputType = "PSObject"
+                $OutputType = "PSObject",
+            [Parameter()]
+                [Object]$Body,
+            [Parameter()]
+                [Object]$Headers,
+            [Parameter()]
+                [Object]$ContentType,
+            [Parameter()]
+                [boolean]$SkipHeaderValidation,
+            [Parameter()]
+                [switch]$PassThru
          )
 
-    $Result       = @()
-    $ResultsCount = 0
+<# TROUBLESHOOTING !!
+    
+    $Uri = $Uri
+    $Method = "GET"
+    $OutputType = "PSObject"
 
-    $ResultsRaw   = Invoke-MGGraphRequest -Method $Method -Uri $Uri -OutputType $OutPutType
+#>
+    $Result        = @()
+    $ResultsCount  = 0
+
+    $CmdToRun_Hash = @{}
+
+    If ($Method)
+        {
+            $CmdToRun_Hash += @{ Method = $Method }
+        }
+    If ($Uri)
+        {
+            $CmdToRun_Hash += @{ Uri = $Uri }
+        }
+    If ($Headers)
+        {
+            $CmdToRun_Hash += @{ Headers = $Headers }
+        }
+    If ($Body)
+        {
+            $CmdToRun_Hash += @{ Body = $Body }
+        }
+    If ($OutputType)
+        {
+            $CmdToRun_Hash += @{ OutputType = $OutputType }
+        }
+    If ($ContentType)
+        {
+            $CmdToRun_Hash += @{ ContentType = $ContentType }
+        }
+    If ($SkipHeaderValidation)
+        {
+            $CmdToRun_Hash += @{ SkipHeaderValidation = $SkipHeaderValidation }
+        }
+    If ($PassThru)
+        {
+            $CmdToRun_Hash += @{ PassThru = $PassThru }
+        }
+
+    $ResultsRaw   = Invoke-MGGraphRequest @CmdToRun_Hash
 
     $Result       += $ResultsRaw.value
     $ResultsCount += ($ResultsRaw.value | Measure-Object).count
@@ -498,7 +550,44 @@ Function Invoke-MgGraphRequestPS
                 { 
                     Try
                         {
-                            $ResultsRaw    = Invoke-MGGraphRequest -Method $Method -Uri $ResultsRaw.'@odata.nextLink' ?-OutputType $OutPutType
+                            $Uri = $ResultsRaw.'@odata.nextLink'
+
+                            $CmdToRun_Hash = @{}
+
+                            If ($Method)
+                                {
+                                    $CmdToRun_Hash += @{ Method = $Method }
+                                }
+                            If ($Uri)
+                                {
+                                    $CmdToRun_Hash += @{ Uri = $Uri }
+                                }
+                            If ($Headers)
+                                {
+                                    $CmdToRun_Hash += @{ Headers = $Headers }
+                                }
+                            If ($Body)
+                                {
+                                    $CmdToRun_Hash += @{ Body = $Body }
+                                }
+                            If ($OutputType)
+                                {
+                                    $CmdToRun_Hash += @{ OutputType = $OutputType }
+                                }
+                            If ($ContentType)
+                                {
+                                    $CmdToRun_Hash += @{ ContentType = $ContentType }
+                                }
+                            If ($SkipHeaderValidation)
+                                {
+                                    $CmdToRun_Hash += @{ SkipHeaderValidation = $SkipHeaderValidation }
+                                }
+                            If ($PassThru)
+                                {
+                                    $CmdToRun_Hash += @{ PassThru = $PassThru }
+                                }
+
+                            $ResultsRaw   = Invoke-MGGraphRequest @CmdToRun_Hash
                         }
                     Catch
                         {
@@ -1023,8 +1112,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDNJFjHHgRzhqub
-# 8hkIjTG2dm9Ql/qZH96nsd7M1AX/3aCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDF4YhjeKn960/y
+# 3K/jlJvGjfKvpRDOkntC4XhYwNQr9KCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -1132,17 +1221,17 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIDDZBwqL03Oepe95OeTIbrU0
-# ErS4Iss1Ra+ekt9aH9lgMA0GCSqGSIb3DQEBAQUABIICAHQvqf2FIyn5Uzht8Jrs
-# t7cVCvU7KPYjaH+Rcp2Yn/xB/LNY6DXtuu6LL0lGd9mLB4ssZOi3EnhA33UhgVi6
-# 0i+zb7z7qG47SE9qj+UsBZzIP8kPCrUJKWTaAS9/F5sAW9ARjjKZ/W0u8d0B8Nzv
-# CO6tt2yqWT0w6Uv5q3Ra+Jivq9GshgHyItTJidCcbS0Q45c7Dhylaq+IFFMan7Na
-# ChU7vosoBWv3xDZjtWC3iwBChBcKT53FM7Blsy5ts+kk4JxZmJhViLATHglKorbO
-# o/P6fbC5k4R8Hwp7baOPK0DrFbV3+qP1lPq/sq/hBpkrfzlaJr70UQzW9VHduV2t
-# 3raR8K+D7p9YpR0HLc9d03FlsYOgLu5q9U4irStSW2qiQxp506IyJXLowl2F0xz9
-# whbhO23RcG9VxfqnVjtyCfSFLZLe/smrnsi+HGX9mUctf4SCVPPxqnb82MOc4kms
-# 50OKTbctdw+K86XRpAYCInkOK0yETPTY6v/wpdLZJKHaajjx/93o4//Y0c2qPNYH
-# BqExeI6Hsu53EZNvSdHD1mSgBxnNKxJxQhwHUokCIWYn5s/OyFnOrnEO+9iEgP9w
-# I6vkbsoAN7QYyyQEiMBX96a1iAI6Y/h36kWGsI+xl4TF///i2URx+DkwIlNsc3Tp
-# 9qnnungWbfotNOfITRgARnlL
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIHB0jYl4IFeZ2YnA7mxssj4X
+# y7enqK60d+M9D4zqAiAFMA0GCSqGSIb3DQEBAQUABIICACuHkSfByi5Hau4ILrI0
+# 35Y3aow3kIMx5P3V+7HS7nGZFTi3bBbKpQHMDhPaAU9MfxpWFqNj7Q4/C4G7ShaB
+# zB8zQXAf5/P4uEETviOLuiD/8HTXDPBF5vjXLdsDwQJYJidrUit4bbJUqeZKQWV4
+# AzONW8kSepoNKXlOiEnMbojXPiXapewwZVKsx2LvzBh8aYSztJeaQ0ZkOrC5Ota5
+# CZFBFImfEtpix5caf/rG17DxIaBUga6shAcGhDkDCN8mLGaRuNrJ7bslZh4NMuNg
+# dkuTXbhPveHD/fCRupHQV7bgCC8JCGcyyeUg2ig2ja/KFoTqlRUzrA06Whn0DJJz
+# tY69wX89erLrQoq7JOvP2VB15Z4SlW+tv5ik0zyM+A2vJdGvhcxzXxcng9o2hTKW
+# 2kX7DrLqY8mhZ5A3u/BV43EsVc4mvVbRQKXVEJYRBGVUFJOf/gJsriUFYR7J4E7K
+# KtZTuoA2aPa0hZbx/Ao3cNpQ3fB2TKD8oGMAhL66fslnyBaLa1mCHVc5XOw/opSF
+# j59jfdSuIoXWzuRLWIZzltouHRLebyuQKsVQbcGWFyObzJQ0/61WeT03FLFvlOOu
+# a6YhjINm5QBcBNjR40f4v1JCv5fZ4nHUWD6KBZLojC85w0eHsgjLs1s5OKvFeaCY
+# iAaex0i+pQxufR/fmU9X7phI
 # SIG # End signature block
