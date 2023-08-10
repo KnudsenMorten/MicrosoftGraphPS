@@ -650,8 +650,12 @@ Function Invoke-MicrosoftRestApiRequestPS
             [Parameter(mandatory)]
                 [ValidateSet("GET", "DELETE", "POST", "PUT", "PATCH", IgnoreCase = $false)] 
                 $Method = "GET",
-            [Parameter(mandatory)]
-                [Object]$Headers
+            [Parameter()]
+                [Object]$Body,
+            [Parameter()]
+                [Object]$Headers,
+            [Parameter()]
+                [Object]$ContentType
          )
 
 <#   TROUBLESHOOTING
@@ -667,7 +671,30 @@ Function Invoke-MicrosoftRestApiRequestPS
 
                 try 
                     {
-                        $ResponseRaw = Invoke-WebRequest -Method $Method -Uri $Uri -Headers $Headers
+                        $CmdToRun_Hash = @{}
+
+                        If ($Method)
+                            {
+                                $CmdToRun_Hash += @{ Method = $Method }
+                            }
+                        If ($Uri)
+                            {
+                                $CmdToRun_Hash += @{ Uri = $Uri }
+                            }
+                        If ($Headers)
+                            {
+                                $CmdToRun_Hash += @{ Headers = $Headers }
+                            }
+                        If ($Body)
+                            {
+                                $CmdToRun_Hash += @{ Body = $Body }
+                            }
+                        If ($ContentType)
+                            {
+                                $CmdToRun_Hash += @{ ContentType = $ContentType }
+                            }
+
+                        $ResponseRaw = Invoke-WebRequest @CmdToRun_Hash
                         $ResponseAllRecords += $ResponseRaw.content
                         $ResponseRawJSON = ($ResponseRaw | ConvertFrom-Json)
                         $ResultsCount += ( ($ResponseRaw.content | ConvertFrom-Json).value | Measure-Object).count
@@ -731,6 +758,7 @@ Function Invoke-MicrosoftRestApiRequestPS
 
     Return $Result
 }
+
 
 
 Function Manage-Version-Microsoft.Graph
@@ -1112,8 +1140,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDF4YhjeKn960/y
-# 3K/jlJvGjfKvpRDOkntC4XhYwNQr9KCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDq6fmQA9GJmIUj
+# aMDPv+XTwB0/xlPC9DrDbXgcqcsyIaCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -1221,17 +1249,17 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIHB0jYl4IFeZ2YnA7mxssj4X
-# y7enqK60d+M9D4zqAiAFMA0GCSqGSIb3DQEBAQUABIICACuHkSfByi5Hau4ILrI0
-# 35Y3aow3kIMx5P3V+7HS7nGZFTi3bBbKpQHMDhPaAU9MfxpWFqNj7Q4/C4G7ShaB
-# zB8zQXAf5/P4uEETviOLuiD/8HTXDPBF5vjXLdsDwQJYJidrUit4bbJUqeZKQWV4
-# AzONW8kSepoNKXlOiEnMbojXPiXapewwZVKsx2LvzBh8aYSztJeaQ0ZkOrC5Ota5
-# CZFBFImfEtpix5caf/rG17DxIaBUga6shAcGhDkDCN8mLGaRuNrJ7bslZh4NMuNg
-# dkuTXbhPveHD/fCRupHQV7bgCC8JCGcyyeUg2ig2ja/KFoTqlRUzrA06Whn0DJJz
-# tY69wX89erLrQoq7JOvP2VB15Z4SlW+tv5ik0zyM+A2vJdGvhcxzXxcng9o2hTKW
-# 2kX7DrLqY8mhZ5A3u/BV43EsVc4mvVbRQKXVEJYRBGVUFJOf/gJsriUFYR7J4E7K
-# KtZTuoA2aPa0hZbx/Ao3cNpQ3fB2TKD8oGMAhL66fslnyBaLa1mCHVc5XOw/opSF
-# j59jfdSuIoXWzuRLWIZzltouHRLebyuQKsVQbcGWFyObzJQ0/61WeT03FLFvlOOu
-# a6YhjINm5QBcBNjR40f4v1JCv5fZ4nHUWD6KBZLojC85w0eHsgjLs1s5OKvFeaCY
-# iAaex0i+pQxufR/fmU9X7phI
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIPAo2ZJ3K327M/LeYgbGMSKF
+# ocSQIrRzzJ8D/feRrQAVMA0GCSqGSIb3DQEBAQUABIICAE0hKae9RxKsoUJnXY5J
+# Lrtw5qE5+ATl3kO7mp8ipGRYgj/uobdQIYWhnFRzpD2CNjyy+FWotPECxSwcj96/
+# OgXDAerCM/N4KP3dkAPH4AHxOokKdNjF4gUgbmjlnp8gD1hScOsSbZ9xcG/2+TZw
+# ZSJS7fnY4NTfaap7eywMb2EPzPdB/+M75oGtyvSsqzfE1o4t2MChVjzTlOOomxrX
+# kbGUnt5Gd0hAgEypGgn/tmL2r2xzKyCQWtSmWyLRUD9i2SCLhKu1SKXqPlF7E1m3
+# z7Jr/vLbDfeF83156JzzARkA3e2SB8+mVLtv9JLm4EB/DKnFWrHusd9Mes4svMiG
+# 20AuikKU3XaFZpJxKPlkbIOhs29F6DYz6VPtUrpkl8QQio2uom5rgJgrOHM4K/vl
+# G6IoMPa0+ErZs1InsWr4zjmlE8FQAUW2Nq5F8TasuxySVpyoHyPWMIvw7JLr9BLf
+# 1w4PNjVQNRcc8Z9vChdECltWpUu0S5Fl8K3Y9e7UxoGzhVrgwXMbvs5hsy2ARTC4
+# wJdIHWnuu4lfLXdxgooFWX6sqHMi1730p8f+jXU9he+Mn6ImB1hxdIWPc8BLdCT6
+# kfp3+eXdzRr3kcMbBIhVQ1cE4S80F/BckY7rgMhoix0yZ/J4f/AHLFzj7gor9l+9
+# WJ7mqedIj9QIqrofJUIky2dq
 # SIG # End signature block

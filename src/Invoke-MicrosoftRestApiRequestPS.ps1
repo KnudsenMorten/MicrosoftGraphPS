@@ -43,8 +43,12 @@
             [Parameter(mandatory)]
                 [ValidateSet("GET", "DELETE", "POST", "PUT", "PATCH", IgnoreCase = $false)] 
                 $Method = "GET",
-            [Parameter(mandatory)]
-                [Object]$Headers
+            [Parameter()]
+                [Object]$Body,
+            [Parameter()]
+                [Object]$Headers,
+            [Parameter()]
+                [Object]$ContentType
          )
 
 <#   TROUBLESHOOTING
@@ -60,7 +64,30 @@
 
                 try 
                     {
-                        $ResponseRaw = Invoke-WebRequest -Method $Method -Uri $Uri -Headers $Headers
+                        $CmdToRun_Hash = @{}
+
+                        If ($Method)
+                            {
+                                $CmdToRun_Hash += @{ Method = $Method }
+                            }
+                        If ($Uri)
+                            {
+                                $CmdToRun_Hash += @{ Uri = $Uri }
+                            }
+                        If ($Headers)
+                            {
+                                $CmdToRun_Hash += @{ Headers = $Headers }
+                            }
+                        If ($Body)
+                            {
+                                $CmdToRun_Hash += @{ Body = $Body }
+                            }
+                        If ($ContentType)
+                            {
+                                $CmdToRun_Hash += @{ ContentType = $ContentType }
+                            }
+
+                        $ResponseRaw = Invoke-WebRequest @CmdToRun_Hash
                         $ResponseAllRecords += $ResponseRaw.content
                         $ResponseRawJSON = ($ResponseRaw | ConvertFrom-Json)
                         $ResultsCount += ( ($ResponseRaw.content | ConvertFrom-Json).value | Measure-Object).count
@@ -125,11 +152,12 @@
     Return $Result
 }
 
+
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUezhMyk9krqrENDH98qoqk3Z3
-# UKKggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUMdOtqjvIIfUn2yHKRFJCsULg
+# OrGggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -208,16 +236,16 @@
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# INLGBWh0R4mcq1vxCWQ61HXDWw8wDQYJKoZIhvcNAQEBBQAEggIAoAciXewhZstv
-# VMEchH6LLr/LcKJU4dcnq/rcWSguwQiiYZV3Vod+eZnHUyr62uvYztJHFjkAr/PT
-# mKNpV3i+YZ5eCD/xixRl1BLmJca70jUmjWo4gZC0DUeY0FxBsS90TaaMd7EHZ+1/
-# alc8ZBftua9fdYhEy48mDzPY9sHNnQXLjl81yfVDLdqM3VfftqaMy+xHeEHQSwob
-# c04DO+Q0qm2e8gMC+nbBD5Jua82m6vRodCFxVMFdYC86qYr6vFoWXInLzJIJ9MG8
-# 9QubvL6VqbgjEakVZfvkvv34ETyNIQKRH9h7aSKBf1A2exWaJscww5LFu9enp6yx
-# MmVRPe7cPFr4zn7E0knXL4c7xHaVjcEh6eZtICUWs3Ujrmkp06XHYV4N2AnziLpx
-# Fip+QRy5993Ve1xuEGIEAyJX32uu8XS4ntchZV04YumMh5JVXFbshsjVlrbkfOEK
-# X3LY6W4r+ltUkaEVbJ1M2SIGLMNQbmZAvq346SXmTZXRXw+nW9ojUZwbmBPs2cLz
-# a1IwwAfWkQtVnROUoVGSfi9IzfyYHyKgOaEdPv5yXrMX/Z3D/rxKGHyWBSkayuGJ
-# Z0LbVNYCX40//V3S6U1imb/4ysyjM+lXSEhPK5WfyBSJTgQHlK00+LdMio779DOU
-# QAAJbYsNrjL06KWJc/5nZG4MYav4LkI=
+# 98SqhNtgswRkj8QDCHcqM9LHq1swDQYJKoZIhvcNAQEBBQAEggIAnN0kU2o55WN7
+# cAOvxRpk04WEly0qzKa+63WUbst+skdnEeFjV1WwdtXrJVBxJyWeRolArTgJPf/V
+# UEDadbAJqmjbbVo4BrwvSocYNs/FL6SHI6K5axqkb0+m4tQ9VzTxYE/utaOda1gZ
+# rv1tx6x0yi9GBcP2wSRzMw0SiiJb2bQ+4B5EYORN8yNT3901nmSXHLhpXzvEMO2X
+# JUjJwdYQDwHWaIDIU8OYqFXyZFAsWkZ7MAUw4yiMQA5z1G2BmVo6iKkPkTwj7zmX
+# FlBKEeM7rOIVPhGPK9YqAVt1pOVk0xV8pJFKQqkmxH6iV/XYIuxOOAphHVRznlD1
+# y6oAIudLxXmSSTViyH5dI/6GkGPDwv5E5BnPHrf+dlA0CJ8zpEkm9VYbnNYBt4/4
+# zcu4nbatAXbbw6t5wK4PScbf+PiaJQl8dKFhKY0wMx9DmdXylM8ljvSKSw898n7d
+# pC+OBp9kdvfnMxMeCXeXI3l21pba15/+2dYIP3UN+WwkeFyb2s9EFs8gnufT2LBm
+# rnepmUKpSLzRQbAZ13SbopAO0jFQah0WfI6LdmeEvfUgKXGSvl/QG7SfA+tm5qOL
+# IeOZMups0OAyqt3YINItm9oqEDYxL+xJfYxRiOUBqjaAzpcxRk4ZdH+ZCaZrbeJL
+# cjbghAvSy+4foP23OOG4mCwYZoxONeU=
 # SIG # End signature block
