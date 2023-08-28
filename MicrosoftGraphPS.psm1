@@ -302,7 +302,7 @@ $Result.ManagerProperties | fl
         $PropertiesExpand = @("Manager")
 
     # Getting all data about users
-        Write-Host "Getting all properties from all users in Entra ID (prior named Azure AD) .... Please Wait !"
+        Write-Verbose "Getting all properties from all users in Entra ID .... Please Wait !"
         $EntraID_Users_ALL = Get-MgUser -All -Property $Properties -ExpandProperty $PropertiesExpand | Select-Object $Properties | `
                              Select *,@{Name = 'ManagerDisplayName'; Expression = {$_.Manager.AdditionalProperties.displayName}}, `
                                       @{Name = 'ManagerMail'; Expression = {$_.Manager.AdditionalProperties.mail}},`
@@ -1140,8 +1140,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDq6fmQA9GJmIUj
-# aMDPv+XTwB0/xlPC9DrDbXgcqcsyIaCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBbY3xS7b9kjN1F
+# bkaNASeYoFxlN22dFcPOyiPoqPycBKCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -1249,17 +1249,17 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIPAo2ZJ3K327M/LeYgbGMSKF
-# ocSQIrRzzJ8D/feRrQAVMA0GCSqGSIb3DQEBAQUABIICAE0hKae9RxKsoUJnXY5J
-# Lrtw5qE5+ATl3kO7mp8ipGRYgj/uobdQIYWhnFRzpD2CNjyy+FWotPECxSwcj96/
-# OgXDAerCM/N4KP3dkAPH4AHxOokKdNjF4gUgbmjlnp8gD1hScOsSbZ9xcG/2+TZw
-# ZSJS7fnY4NTfaap7eywMb2EPzPdB/+M75oGtyvSsqzfE1o4t2MChVjzTlOOomxrX
-# kbGUnt5Gd0hAgEypGgn/tmL2r2xzKyCQWtSmWyLRUD9i2SCLhKu1SKXqPlF7E1m3
-# z7Jr/vLbDfeF83156JzzARkA3e2SB8+mVLtv9JLm4EB/DKnFWrHusd9Mes4svMiG
-# 20AuikKU3XaFZpJxKPlkbIOhs29F6DYz6VPtUrpkl8QQio2uom5rgJgrOHM4K/vl
-# G6IoMPa0+ErZs1InsWr4zjmlE8FQAUW2Nq5F8TasuxySVpyoHyPWMIvw7JLr9BLf
-# 1w4PNjVQNRcc8Z9vChdECltWpUu0S5Fl8K3Y9e7UxoGzhVrgwXMbvs5hsy2ARTC4
-# wJdIHWnuu4lfLXdxgooFWX6sqHMi1730p8f+jXU9he+Mn6ImB1hxdIWPc8BLdCT6
-# kfp3+eXdzRr3kcMbBIhVQ1cE4S80F/BckY7rgMhoix0yZ/J4f/AHLFzj7gor9l+9
-# WJ7mqedIj9QIqrofJUIky2dq
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIPRwTvvqNV6hDkTikV93F6VV
+# ic+saC8//nTTooSNNKtbMA0GCSqGSIb3DQEBAQUABIICAIbOkjWAK1LojK+cptu1
+# VWL8C0cV07oxY69TDQ5quoh7QHXzzotvj4t6wDTnkv4329iFMz+xrIKZasMKG/lG
+# gI+tUA1I2XUszPMO6ZZt4ou5oZeUt5R3pDFyl+CGMeYB4ZEzpmnS07avhFYG2rv3
+# RsSGdH+ieAAecUswZ8tp/5tk88ga4IPOQ1MvZfV0nmm6+cZbHHvq3bkCpfYOgW3J
+# SXNrNvgMEglvYkpQrjDRx2o+dYD00AnhF35076Qio6q+eGqF6lw1Nj4HKMeVHkby
+# rWK0VIpz8UTHHCBpGFK3VFIqxEsEja/DfigLqhWO0iMgjNPAq9vMPK9FZBKpAHEi
+# IWVCgH+Wl8GNRZZ3LxmktYMmnqQITpqFagZ71wIsrVGorHN3ZI3/VD1kkhhvFHq9
+# 7HmvpU0DwCQsFUjngmf3EFgsitlAjWB9+rws17gAvYjVPYmQeUkcQfNivobg7QH8
+# fEzhz5z0v1+jpMLP8qlezJPNpyEtJzD9gAG85rtjjRTUofBxt21oJeXa3c1IDWBw
+# MWEcK2uHsECSgISXdmJwNEdRhdNjNspJQ9qkyQNUvftOzcspRAl4ch83PDE/qLrc
+# aBYdOR4mnp5Mjg7u51RMwXUDbNipAHUoXDsMU6ag7PVhmWX7SfN+iwZcKi0e41nt
+# +aOv0581Q/kMjNaDB9AsZmxD
 # SIG # End signature block
