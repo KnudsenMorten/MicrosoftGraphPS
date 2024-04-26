@@ -163,7 +163,7 @@ Manage-Version-Microsoft.Graph -CleanupOldMicrosoftGraphVersions
 #### **Install, Update and Clean-up older Microsoft Graph versions (except the latest available version)**
 
 ```
-Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions -Scope $AllUsers
+Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoftGraphVersions -Scope AllUsers
 ```
 
 
