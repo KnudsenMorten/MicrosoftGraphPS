@@ -171,9 +171,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
         {
             Write-host ""
             Write-Host "Removing all versions of Microsoft.Graph main module ... Please Wait !"
-            Remove-Module Microsoft.Graph -Force -ErrorAction SilentlyContinue
             Uninstall-Module Microsoft.Graph -AllVersions -Force -ErrorAction SilentlyContinue
-
+            Remove-Module Microsoft.Graph -Force -ErrorAction SilentlyContinue
 
             # Remove all dependency modules from memory + uninstall
             $Retry = 0
@@ -181,7 +180,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                 {
                     $Retry = 1 + $Retry
 
-                    $LoadedModules = Get-Module Microsoft.Graph.* -ListAvailable -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne 'Microsoft.Graph.Authentication' }
+                    $LoadedModules = Get-Module Microsoft.Graph.* -ListAvailable -ErrorAction SilentlyContinue | Where-Object { ($_.Name -ne 'Microsoft.Graph.Authentication') -and ($_.Name -notlike "*beta*") }
                     $LoadedModules = $LoadedModules | Sort-Object -Property Name
 
                     # Modules found
@@ -225,7 +224,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                         }
 
                     # Verifying if all modules have been removed
-                    $InstalledModules = Get-Module Microsoft.Graph.* -ErrorAction SilentlyContinue
+                    $InstalledModules = Get-Module Microsoft.Graph.* -ErrorAction SilentlyContinue | Where-Object { ($_.Name -notlike "*beta*") }
                 }
             Until ( ($LoadedModules -eq $null) -or ($Retry -eq 5) )
         }
@@ -234,7 +233,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 
     Write-host ""
     Write-Host "Checking if Microsoft.Graph is installed"
-        $Installed = Get-module Microsoft.Graph.* -ListAvailable
+        $Installed = Get-module Microsoft.Graph.* -ListAvailable | Where-Object { ($_.Name -notlike "*beta*") }
 
         If ($Installed)
             {    
@@ -256,7 +255,7 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
                 Write-host ""
                 Write-Host "Checking if you are running latest version of Microsoft.Graph from PSGallery ... Please Wait !"
 
-                $InstalledVersions = Get-module Microsoft.Graph* -ListAvailable | Where-Object { ($_.ModuleType -eq "Manifest") -or ($_.ModuleType -eq "Script") }
+                $InstalledVersions = Get-module Microsoft.Graph* -ListAvailable | Where-Object { (($_.ModuleType -eq "Manifest") -or ($_.ModuleType -eq "Script")) -and ($_.Name -notlike "*beta*") }
                 $InstalledVersionsCount = ( ($InstalledVersions | Group-Object -Property Version) | Measure-Object).count
                 $LatestVersion = $InstalledVersions | Sort-Object Version -Descending | Select-Object -First 1
 
@@ -375,8 +374,8 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # SIG # Begin signature block
 # MIIRgwYJKoZIhvcNAQcCoIIRdDCCEXACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUr2NU6OdpSChEFADRbAMm3BYG
-# MgGggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU0CYP87DnBNUDaSwT4XEfRk2F
+# mhuggg3jMIIG5jCCBM6gAwIBAgIQd70OA6G3CPhUqwZyENkERzANBgkqhkiG9w0B
 # AQsFADBTMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEp
 # MCcGA1UEAxMgR2xvYmFsU2lnbiBDb2RlIFNpZ25pbmcgUm9vdCBSNDUwHhcNMjAw
 # NzI4MDAwMDAwWhcNMzAwNzI4MDAwMDAwWjBZMQswCQYDVQQGEwJCRTEZMBcGA1UE
@@ -455,16 +454,16 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # ZGVTaWduaW5nIENBIDIwMjACDHlj2WNq4ztx2QUCbjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# tUGI18xnrjUxQAHI/Bm8BWQ072owDQYJKoZIhvcNAQEBBQAEggIAhazeRkmnTRHb
-# S67XfULRNNBsH1QpTFV09xG49K80x4FrqVlbDEDFwN2zUqgAjJaEPJFhvFOwM8Du
-# TgC6zU4G/J881lSRGN4yYRcX4N/MDI3xnVA8W17R64aMKsJ/PlTdlxtDxZydrjo4
-# dzAfMhFR6kA+izsEWZ+8PWtRIf5hzvl6NKTXZzMtmXvkNu+7decNLBdEVj7w4RLM
-# PqIhczU4Vrt10rNWeZeKlxNcnLplLlKw6c0+8rXuVgVrAkxYyHyB03bj0MWfljkM
-# nAwx2S0i+XHXKILoVupSN5riGgcSwO2yoA66dMaOXVQCU3IlDWTR0SoOwAFSmX83
-# sVOBaUENB293Bua0k4JPZ1eINQfMByjRHQqGsTTrKFdeNojMYOxk44qGgFwHHIEK
-# J3v/DQn1NfqU4Z5MXzmOHWKDycMtSabi+81j1M4JHi837fo/cGNQlheDA3MED+MW
-# WyO3lGckG5cJjw7KQWv75zN07syoQyxpow5vkO3SkX2Ey0D4Q4gX4DZfvLFOIeON
-# TNE0RfaLWYbyB2dGUBICPLL3WqsxjXe746vzzTppOJ/NwR8LPOgqPyeT010dfFuA
-# fZiYoT5tGxlUMFHBs4PZqGIklWlt+5Asz4olC2if2dyOL00J6vOVZnRoUvx4zDlI
-# hZeVGfeJ5nRiSn4tbFZ0yDjD0KOYPAI=
+# 3Fn7iotHk+vApVe7yVH75BqWdqMwDQYJKoZIhvcNAQEBBQAEggIAvItCLUwmCWUN
+# ZUYmzQImLqwaz/mgutxdW3Bwp2L6FNi+LX9WpcFUEQuqGUlLi3/Fzbgl5rC/6/r6
+# x7ZTfOWqrgRmVqxubeCYOJeb7Va+zXXPEKy212FJpxqXjOknZKzztYsF5hdlHhdD
+# wtmW7GALOO5qal9fvmYWf/WxkJkFbB43k80mbYLiCA6bmk+SjiYXnfoKQwQZXz9o
+# IDyv+3tWnm6LRRLTybfAyVeN4G+tSBz/66Bj/Ml5En49DEzCh7JQ+3DymIY1JdYO
+# VhiFu9WLalONzvjDhA7l0cXUxmi3q8kCIPgwxolpqF/j68P2K3qUOS1TRtqDeHzl
+# uRX7wCy8YMtp4+FNKmuFMs2FsrYsBs1wRDhHqC5sZC/HK3/nh7noQE7qATQ2D2sG
+# jVwAaPm0lF+zNJk0+TVP7XQl5s0s/NMOhBRp5u4PIDTPr5OxM9NIIY1Mz8kCKmq+
+# 4dLMa6Mw0HcXdJrpTfmu/xDYVhOSiKUVq95zavmNL4wwhk1pyBhPP394tE4Q1rKP
+# htZVSNJHK8RY9tQC6Pq2if0R1jnV1CM9XSTmOyLRBl51wWP2uYO1eUHKdzEhPWXP
+# SDvH70NlNr0UZgjd1oIa8ZNGEHHjlpmOmoOQZI4sMhOVM2MWsCn1AtDL493II1e/
+# ssavii+QXGLdZfSOOOq+03UVhDJ5wcc=
 # SIG # End signature block
