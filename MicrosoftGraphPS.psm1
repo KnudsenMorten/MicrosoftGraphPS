@@ -1,5 +1,4 @@
-Function Connect-MicrosoftGraphPS
-{
+Function Connect-MicrosoftGraphPS {
 <#
     .SYNOPSIS
     Connect to Microsoft Graph (requires PS-module Microsoft Graph minimum v2.x)
@@ -132,8 +131,9 @@ Function Connect-MicrosoftGraphPS
 }
 
 
-Function Connect-MicrosoftRestApiEndpointPS
-{
+
+
+Function Connect-MicrosoftRestApiEndpointPS {
 <#
 .SYNOPSIS
 Connect to REST API endpoint
@@ -216,8 +216,9 @@ param(
 }
 
 
-Function Get-MgUser-AllProperties-AllUsers
-{
+
+
+Function Get-MgUser-AllProperties-AllUsers {
 <#
 
 .SYNOPSIS
@@ -312,8 +313,9 @@ $Result.ManagerProperties | fl
 }
 
 
-Function InstallUpdate-MicrosoftGraphPS
-{
+
+
+Function InstallUpdate-MicrosoftGraphPS {
 <#
     .SYNOPSIS
     Install and Update MicrosoftGraphPS module
@@ -431,8 +433,9 @@ Function InstallUpdate-MicrosoftGraphPS
 }
 
 
-Function Invoke-MgGraphRequestPS
-{
+
+
+Function Invoke-MgGraphRequestPS {
 <#
     .SYNOPSIS
     Invoke command to get/put/post/patch/delete data using Microsoft Graph REST endpoint
@@ -605,8 +608,9 @@ Function Invoke-MgGraphRequestPS
 }
 
 
-Function Invoke-MicrosoftRestApiRequestPS
-{
+
+
+Function Invoke-MicrosoftRestApiRequestPS {
 <#
     .SYNOPSIS
     Invoke command to get/put/post/patch/delete data using Microsoft REST API endpoint
@@ -761,8 +765,8 @@ Function Invoke-MicrosoftRestApiRequestPS
 
 
 
-Function Manage-Version-Microsoft.Graph
-{
+
+Function Manage-Version-Microsoft.Graph {
 <#
 .SYNOPSIS
 Version management of Microsoft.Graph PS modules
@@ -1136,11 +1140,13 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 
 
 
+
+
 # SIG # Begin signature block
 # MIIXHgYJKoZIhvcNAQcCoIIXDzCCFwsCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDzdkwj4m+JE/Ys
-# uzpJnQqNSD69AmfJ4jI+oaaUCRG7xaCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCliDhFunbVK7t8
+# pPsRso0LpeNVk8JRdshbX+hqC2HjJKCCE1kwggVyMIIDWqADAgECAhB2U/6sdUZI
 # k/Xl10pIOk74MA0GCSqGSIb3DQEBDAUAMFMxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
 # ExBHbG9iYWxTaWduIG52LXNhMSkwJwYDVQQDEyBHbG9iYWxTaWduIENvZGUgU2ln
 # bmluZyBSb290IFI0NTAeFw0yMDAzMTgwMDAwMDBaFw00NTAzMTgwMDAwMDBaMFMx
@@ -1248,17 +1254,17 @@ Manage-Version-Microsoft.Graph -InstallLatestMicrosoftGraph -CleanupOldMicrosoft
 # VQQDEyZHbG9iYWxTaWduIEdDQyBSNDUgQ29kZVNpZ25pbmcgQ0EgMjAyMAIMeWPZ
 # Y2rjO3HZBQJuMA0GCWCGSAFlAwQCAQUAoIGEMBgGCisGAQQBgjcCAQwxCjAIoAKA
 # AKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEO
-# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIHzkWRwy5FwB9dazKAh6Zw7o
-# iOpaAna0XZDzNU46YYiCMA0GCSqGSIb3DQEBAQUABIICAJFwrX0jdNRsKxsri9oC
-# 4GoFkuqCeyOluTkL5LuxgwiWdckknSTj5ULdN0ylupGJU+umZdfLebK5QVXBMI2K
-# syk35AuhJRwL4Scx1/D2p77AgM3shtaixVOwIqKz6hGnRlxl/4EJl33COwJFoZNh
-# 8G3JflWSfLu6z9/8DhRDKOD0Tvqfm3/x7203e8aXooGkncsY5XYldqv8aE67kYKe
-# 2UTvUi/VLrGTdHSn9+H6Wlix2IwtCTcLS08WCMfBW+lr0zvatev4EOtMu1oP/yf9
-# XzW5YyO0psgifXxXoGVhq9BVb0dGyDsQxzNGjQD6sFfehPz/l81a1VG112U8lqmv
-# 8IsF4KqRl2uUUfK/clw9Y2xhiMvKPlGdolvEan14uXKTNZJgoHcHDWo4hajcOOeZ
-# D8BRRFoihf/i/sPPhCd/clsUjY+ruLM6/ISIXklG3qdt9xvb4xPbtOXN/5Fercuz
-# +2leWkwGQVRoAMkEO6E2+3F+uSgPq5DEV/9JKO/0HRt5HFuVM8zjqyL6NzNZQr/4
-# I7wWxN8ADNQkvfupQyD1pjNJSDKqXdarID6pYX1QXzMJu8hJjJ9ZtB7ZiuBgR7kO
-# 6Lit7uLRad1Ss8ceiO2DmKRDeialPIl4TLuPtLZeZFuE2n5Kq3i24hXj550tYo7b
-# OTfjy7+/l8rOOalMwBMxpEbi
+# MAwGCisGAQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIC/Sa0GsZYjMjvvaJoJ4GYaU
+# UVcqgUFfu+1dMQDj0VORMA0GCSqGSIb3DQEBAQUABIICAICA5rHUJwGFMIr/fma/
+# mZBCLIlu/PDzHiSUsRqEeyNBQ5BkrDbJ3l4J0fh6RmuY5QgEWto3hLJZLwVQ6On7
+# NeLEHue15i+Ppt8BXMzv8Pvw8lCQ0K09T0JEA3Gje7E6aJXb+Ddkh/fAYSy4uWdb
+# n48RX5Gvo7iUWynUa0sl6UUULKhHi0c1k+3LtbOKmTQqY9scd5QtQ/WvX5lLUfRV
+# 5Tuhgjzs+NxQjcumjv4DzLgSU00clXJC8Wc14UT1f0jytqceo3wyghYDjvGgmp2I
+# Eaik0DfmspYXuRzb+yaSjD9k51C9K3ssyvis/HR2lhBn6tQodg6DHV3tMb0WoVpF
+# IQzHCVL3rM1jwt77WvX+PBOd9MLEJYUDig7dIM8l7YhIAO23JxZG3YCDuM2uBa7O
+# eFpnq/w2JlEN298tBtlu15L7M1O+v35I0k7Rg7CY7j5nzQiBLX2ry3qHUPMbQMvl
+# BCDcPwmmc49kgPTFgigunD3LEGAoZ0qsStUK9qGiVxYyM2Yu4wpwCuy0On6gUxJv
+# x0+LYpikeql5TAycJkICGSScCIntc99QGIslBqxiShKDbIHhJgF9SPOAfHuJjXB6
+# yrfitPZS7uspnzOHyTqAOpE8pSOKsrmzxbWeyZ0viM1J9oDPla7O5P9AVhewUyYs
+# 8b9Sa/CANcgzsi9kwoZ9Qd+u
 # SIG # End signature block
